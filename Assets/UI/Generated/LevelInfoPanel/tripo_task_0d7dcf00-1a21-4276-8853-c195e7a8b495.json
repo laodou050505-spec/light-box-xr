@@ -1,0 +1,19 @@
+{
+  "task_id": "0d7dcf00-1a21-4276-8853-c195e7a8b495",
+  "status": "success",
+  "type": "text_to_image",
+  "progress": 100,
+  "input": {
+    "prompt": "A clean production-ready sci-fi holographic compact level information panel skin for a futuristic orbital structure puzzle game, wide horizontal dark glass panel, narrow amber vertical rail on the left, cyan edge glow, subtle technical grid and star-map linework, multiple clean empty rows for Unity text overlay, transparent or near-black background, orthographic front-facing graphic design, crisp vector-like edges, minimal elegant futuristic UI. Absolutely no characters, no words, no letters, no numbers, no logos, no icons, no scene, no objects, no perspective, no distortion.",
+    "model_version": "banana"
+  },
+  "output": {
+    "generated_image_url": "https://tripo-data.rg1.data.tripo3d.com/tcli_c6fae067c9334bd9af3d07029c0e7b00/20260818/0d7dcf00-1a21-4276-8853-c195e7a8b495/generated_image.png?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly90cmlwby1kYXRhLnJnMS5kYXRhLnRyaXBvM2QuY29tL3RjbGlfYzZmYWUwNjdjOTMzNGJkOWFmM2QwNzAyOWMwZTdiMDAvMjAyNjA4MTgvMGQ3ZGNmMDAtMWEyMS00Mjc2LTg4NTMtYzE5NWU3YThiNDk1L2dlbmVyYXRlZF9pbWFnZS5wbmciLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE3ODcxNDMzMTJ9fX1dfQ__&Signature=aOrwAvFfRhf0RQkEwZph1bVXK7uWsgT5-stuQGXJ2OKEGVHNtNi8brRcBECf4ktdYtsGOeLSC~jINIV0Z9SuWWfwRCdMDrNQg9D8Wl2yTJJa5WygXnm6buBrl2UdI2bVOWUySDnHTx~uuytFYOEJ2lxm3C-m5a8TBTzTmIuZVGXQSX~xLaTslD6q-PypvJGY0A1WxppSt3rkilt5i~B0ObCXZZ3qFlqXwE~A6A5s9Jxq0FahnbynNFo2OazpfWCa~D210Yfv06PmrUh~2mGe8C5~WumO2rLY-9OCoNKfSEQ4JlZoo20InWSSgI-J9fC4gWAOlKX1rQs8bjnBGt4l~g__&Key-Pair-Id=K1676C64NMVM2J"
+  },
+  "created_at": "2026-08-18T12:41:33.394636Z",
+  "completed_at": "2026-08-18T12:41:49.210640Z",
+  "credits_consumed": 5.0,
+  "downloaded_files": [
+    "/Users/ld/Documents/Codex/结构构建/Assets/UI/Generated/LevelInfoPanel/01_generated_image_url.png"
+  ]
+}

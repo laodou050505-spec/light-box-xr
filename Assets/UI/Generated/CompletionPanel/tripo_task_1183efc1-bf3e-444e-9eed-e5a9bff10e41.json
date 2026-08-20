@@ -1,0 +1,19 @@
+{
+  "task_id": "1183efc1-bf3e-444e-9eed-e5a9bff10e41",
+  "status": "success",
+  "type": "text_to_image",
+  "progress": 100,
+  "input": {
+    "prompt": "A clean production-ready sci-fi holographic game UI panel texture for a futuristic orbital structure puzzle, wide horizontal completion dialog, deep near-black translucent glass rectangle, very thin cyan luminous top border, subtle amber corner accents, quiet circuit traces, a large empty title area, two empty information rows, one empty wide button area, transparent or near-black background, orthographic front-facing graphic design, crisp vector-like edges, minimal elegant futuristic UI. Absolutely no characters, no words, no letters, no numbers, no logos, no icons, no scene, no objects, no perspective, no distortion.",
+    "model_version": "banana"
+  },
+  "output": {
+    "generated_image_url": "https://tripo-data.rg1.data.tripo3d.com/tcli_c6fae067c9334bd9af3d07029c0e7b00/20260818/1183efc1-bf3e-444e-9eed-e5a9bff10e41/generated_image.png?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly90cmlwby1kYXRhLnJnMS5kYXRhLnRyaXBvM2QuY29tL3RjbGlfYzZmYWUwNjdjOTMzNGJkOWFmM2QwNzAyOWMwZTdiMDAvMjAyNjA4MTgvMTE4M2VmYzEtYmYzZS00NDRlLTllZWQtZTVhOWJmZjEwZTQxL2dlbmVyYXRlZF9pbWFnZS5wbmciLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE3ODcxNDMxMjd9fX1dfQ__&Signature=cTWnRU5mhWEcC6XZxe6iNbxSfDklyumT-s7lcCS68tfBED7CgBRjcpGThhsyELN8wsqc36xXDZzvMkhpvFo3rqniCXGDlrQ4uTCDHvvOjFbWWtkIQ2l0zSm3WL5mmthd6txdYPa3GUBRoZaZjHyW4pl7nTc8Fu8DLJzUlXDAWDwucJLLXIzQCmMBc8ICeWmJ7XGbdFBAfI~yh0gOP7OlXBJK-AOmctxnwu1aolEqzKpyMnugXt4ii67C77PM2bfmHc5jDza~b72RqdCBRBdnAtK-pSQGUqJZOjRL5ZfPjYtIkjvavyt6iOO4F9Ti5dXPTLBYN8WCfi6hEmiz90qb7w__&Key-Pair-Id=K1676C64NMVM2J"
+  },
+  "created_at": "2026-08-18T12:38:28.351853Z",
+  "completed_at": "2026-08-18T12:38:45.048398Z",
+  "credits_consumed": 5.0,
+  "downloaded_files": [
+    "/Users/ld/Documents/Codex/结构构建/Assets/UI/Generated/CompletionPanel/01_generated_image_url.png"
+  ]
+}

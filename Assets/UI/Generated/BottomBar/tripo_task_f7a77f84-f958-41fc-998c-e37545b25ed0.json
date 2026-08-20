@@ -1,0 +1,19 @@
+{
+  "task_id": "f7a77f84-f958-41fc-998c-e37545b25ed0",
+  "status": "success",
+  "type": "text_to_image",
+  "progress": 100,
+  "input": {
+    "prompt": "A clean production-ready sci-fi holographic bottom control bar skin for a futuristic orbital structure puzzle game, one wide horizontal glass panel containing six equal empty button slots, deep near-black translucent glass, thin cyan luminous borders, subtle amber accent on the first slot, restrained cyan glow, fine technical circuit linework, transparent or near-black background, orthographic front-facing graphic design, crisp vector-like edges, minimal elegant futuristic UI. Absolutely no characters, no words, no letters, no numbers, no logos, no icons, no scene, no objects, no perspective, no distortion.",
+    "model_version": "banana"
+  },
+  "output": {
+    "generated_image_url": "https://tripo-data.rg1.data.tripo3d.com/tcli_c6fae067c9334bd9af3d07029c0e7b00/20260818/f7a77f84-f958-41fc-998c-e37545b25ed0/generated_image.png?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly90cmlwby1kYXRhLnJnMS5kYXRhLnRyaXBvM2QuY29tL3RjbGlfYzZmYWUwNjdjOTMzNGJkOWFmM2QwNzAyOWMwZTdiMDAvMjAyNjA4MTgvZjdhNzdmODQtZjk1OC00MWZjLTk5OGMtZTM3NTQ1YjI1ZWQwL2dlbmVyYXRlZF9pbWFnZS5wbmciLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE3ODcxNDMyMjB9fX1dfQ__&Signature=ducbOINtdpktgU9JnlEfmNY5j1C81o5e6Li2XhHsUN3GykdlmkrJwRW1psSReN3b4M9MoGPmY9NUWuFdkwbwsI9lem2d0mD5FR7vRHjsPi~n4c9w3-7V0e3qiNu-dD5IbRgXwsNyyocUTa40zEacKItYXC-kNS72fC1fJhBh93y4Yijiz3qWqEUP2VTCxE7uX5SdbH4OtJUTNIqkXLJlL2nggF9VQRDSbc6IflwJq~vaUcjo3CwPNKKOsfVmZ1tMSgxr936hkEgUsFsCLdYlSmHyshdFynw~SX~aln54-JQ9HHp~ria6YOMep8CTC9hoK50JZnSbJvglThJtz7vM7A__&Key-Pair-Id=K1676C64NMVM2J"
+  },
+  "created_at": "2026-08-18T12:40:00.885982Z",
+  "completed_at": "2026-08-18T12:40:16.969008Z",
+  "credits_consumed": 5.0,
+  "downloaded_files": [
+    "/Users/ld/Documents/Codex/结构构建/Assets/UI/Generated/BottomBar/01_generated_image_url.png"
+  ]
+}
