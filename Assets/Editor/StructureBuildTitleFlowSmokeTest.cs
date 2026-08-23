@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using StructureBuild;
@@ -21,7 +22,9 @@ namespace StructureBuild.Editor
         private const string TitleScenePath = "Assets/Scenes/StructureBuildTitle.unity";
         private const string GameplayScenePath = "Assets/Scenes/StructureBuild.unity";
         private const string StateKey = "StructureBuild.TitleFlowSmokeState";
-        private const string VisualDirectory = "VisualQA/WorldSpaceXR-20260820";
+        // Kept separate from the original XR packaging evidence so HUD layout
+        // regressions can be reviewed without overwriting prior captures.
+        private const string VisualDirectory = "VisualQA/UiLayout-20260821-Editor";
 
         private static int frame;
         private static bool waitingForGameplay;
@@ -140,8 +143,32 @@ namespace StructureBuild.Editor
             var previousActive = RenderTexture.active;
             var target = RenderTexture.GetTemporary(width, height, 24, RenderTextureFormat.ARGB32);
             var image = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            // Unity 6000.5 on this macOS runner can crash in the native
+            // billboard-particle path when Camera.Render is called from a
+            // headless editor smoke test. The particle systems are only the
+            // decorative star backdrop, so temporarily suppress their
+            // renderers for this deterministic HUD/layout capture. We also
+            // suppress meteor trail lines for the same editor-only crash
+            // path. They are restored immediately and remain enabled in the
+            // actual player.
+            var particleRenderers = UnityEngine.Object.FindObjectsByType<ParticleSystemRenderer>(FindObjectsInactive.Exclude);
+            var rendererStates = new List<(ParticleSystemRenderer renderer, bool enabled)>();
+            var trailRenderers = UnityEngine.Object.FindObjectsByType<LineRenderer>(FindObjectsInactive.Exclude);
+            var trailStates = new List<(LineRenderer renderer, bool enabled)>();
             try
             {
+                foreach (var particleRenderer in particleRenderers)
+                {
+                    if (particleRenderer == null) continue;
+                    rendererStates.Add((particleRenderer, particleRenderer.enabled));
+                    particleRenderer.enabled = false;
+                }
+                foreach (var trailRenderer in trailRenderers)
+                {
+                    if (trailRenderer == null) continue;
+                    trailStates.Add((trailRenderer, trailRenderer.enabled));
+                    trailRenderer.enabled = false;
+                }
                 camera.targetTexture = target;
                 camera.Render();
                 RenderTexture.active = target;
@@ -151,6 +178,10 @@ namespace StructureBuild.Editor
             }
             finally
             {
+                foreach (var state in rendererStates)
+                    if (state.renderer != null) state.renderer.enabled = state.enabled;
+                foreach (var state in trailStates)
+                    if (state.renderer != null) state.renderer.enabled = state.enabled;
                 camera.targetTexture = previousTarget;
                 RenderTexture.active = previousActive;
                 RenderTexture.ReleaseTemporary(target);

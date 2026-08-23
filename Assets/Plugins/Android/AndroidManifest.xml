@@ -16,5 +16,29 @@
     <meta-data android:name="pvr.sdk.version" android:value="Unity_XR_6.0.0" />
     <meta-data android:name="rendering_mode" android:value="1" />
     <meta-data android:name="controller" android:value="1" />
+    <!--
+      Unity's manifest merger does not synthesize a launcher intent filter
+      when an application-only custom manifest overlay is present.  PICO
+      SpaceOS consequently installs the package but hides it from the
+      launcher.  Declare the official Unity Activity explicitly so the same
+      immersive VR entry point is available to both Android and the PICO
+      launcher.
+    -->
+    <activity
+        android:name="com.unity3d.player.UnityPlayerActivity"
+        android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale|layoutDirection|density"
+        android:enabled="true"
+        android:exported="true"
+        android:hardwareAccelerated="false"
+        android:launchMode="singleTask"
+        android:resizeableActivity="false"
+        android:screenOrientation="landscape"
+        android:theme="@style/UnityThemeSelector">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+      <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
+    </activity>
   </application>
 </manifest>

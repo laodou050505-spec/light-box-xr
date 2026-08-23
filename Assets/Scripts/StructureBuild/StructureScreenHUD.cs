@@ -1,6 +1,5 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine.XR;
 
 namespace StructureBuild
 {
@@ -27,11 +26,11 @@ namespace StructureBuild
         private void Update()
         {
             if (game == null) return;
-            var headset = InputDevices.GetDeviceAtXRNode(XRNode.Head);
-            // In a packaged PICO build the compositor may begin before the
-            // Head InputDevice appears. Android is still the immersive PICO
-            // route, so never briefly enable the desktop overlay there.
-            var immersiveRuntime = Application.platform == RuntimePlatform.Android || headset.isValid;
+            // The Editor may report a virtual headset during Game View
+            // preview. That is still the desktop QA presentation, not the
+            // PICO layout. Restrict the alternate HUD route to the packaged
+            // Android player so the two operation docks can never overlap.
+            var immersiveRuntime = Application.platform == RuntimePlatform.Android;
             if (canvas != null)
             {
                 var visibleForMode = (!hideWhenXRActive || !immersiveRuntime) && (!showOnlyWhenXRActive || immersiveRuntime);
