@@ -73,7 +73,7 @@ namespace StructureBuild
                 }
                 combinedPayloadText.alignment = TextAlignmentOptions.Center;
                 combinedPayloadText.lineSpacing = 30f;
-                combinedPayloadText.text = $"<align=\"center\"><size=29><color=#B8DDE6>{detail}</color></size>\n<size=27><color=#73F4FF>{progress}</color></size></align>";
+                combinedPayloadText.text = $"<align=\"center\"><size=25><color=#B8DDE6>{detail}</color></size>\n<size=23><color=#73F4FF>{progress}</color></size></align>";
             }
             else
             {
@@ -82,6 +82,9 @@ namespace StructureBuild
                 if (progressText != null) progressText.text = progress;
             }
             if (continueLabel != null) continueLabel.text = finalLevel ? "重新开始" : "下一关";
+            // Sample the active gaze once. The completion card then stays
+            // in the room so the player can lean and look around it.
+            GetComponent<PicoHeadLockedCanvas>()?.CaptureWorldPose();
             panelRoot.SetActive(true);
             pendingTextRefreshFrames = 4;
             RefreshTextMeshes();

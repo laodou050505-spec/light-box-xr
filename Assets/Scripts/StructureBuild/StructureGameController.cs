@@ -3,7 +3,9 @@ using System;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 namespace StructureBuild
 {
@@ -39,6 +41,10 @@ namespace StructureBuild
         [Range(0.8f, 1.5f)] public float snapRadiusMultiplier = 1.15f;
         [Range(1f, 1.8f)] public float snapHysteresisMultiplier = 1.32f;
         public float maxSnapRayDistance = 14f;
+        [Tooltip("Extra gap kept between a held preview and the controller origin, in metres.")]
+        [Min(0.05f)] public float minimumControllerPreviewClearance = 0.18f;
+        [Tooltip("Extra gap kept between a newly grabbed preview and the source pedestal, in metres.")]
+        [Min(0.04f)] public float minimumSourcePreviewClearance = 0.12f;
 
         private int levelIndex;
         private LevelDefinition level;
@@ -51,6 +57,7 @@ namespace StructureBuild
         private Material previewMaterial;
         private Material dropIndicatorMaterial;
         private Camera playerCamera;
+        private GameplayInstructionsOverlay instructions;
         private Vector3Int keyboardColumn;
         private bool dragging;
         private bool desktopOwnsDrag;
@@ -68,6 +75,8 @@ namespace StructureBuild
         private float cubeVisualCenterX;
         private float cubeVisualCenterZ;
         private float cubeVisualScale = 1f;
+        private readonly List<RaycastResult> desktopUiHits = new List<RaycastResult>();
+        private PointerEventData desktopPointer;
 
         private readonly struct GridAnchor
         {
@@ -88,6 +97,11 @@ namespace StructureBuild
         public string CurrentStatusText { get; private set; } = "等待结构输入";
         public bool IsDragging => dragging;
         public bool IsLevelCompleted => levelCompleted;
+        public bool IsGameplayInputAllowed => instructions == null || instructions.IsGameplayInputAllowed;
+        // In-memory progress for this campaign run, not a saved-game value.
+        // Reloading/resetting a level must not bring completed onboarding back.
+        public int HighestCompletedLevel { get; private set; }
+        public event Action CampaignProgressChanged;
         public Vector3Int? CurrentDropCell => dragCell;
         public Bounds GroundBounds { get; private set; }
         public Bounds StructureBounds
@@ -105,6 +119,8 @@ namespace StructureBuild
         private void Awake()
         {
             playerCamera = Camera.main;
+            instructions = GetComponent<GameplayInstructionsOverlay>();
+            if (instructions == null) instructions = FindAnyObjectByType<GameplayInstructionsOverlay>();
             if (audio == null) audio = FindAnyObjectByType<StructureAudioController>();
             if (gridRoot == null) gridRoot = transform;
             if (cubePrefab == null) cubePrefab = CreateFallbackCubePrefab();
@@ -126,25 +142,31 @@ namespace StructureBuild
             levelIndex = index; level = CampaignData.Levels[index]; levelCompleted = false; history.Clear(); ClearCells();
             if (levelLabel) levelLabel.text = $"档案 {index + 1:00} / {CampaignData.Levels.Length} · {level.displayName}";
             EvaluateAndDisplay();
+            CampaignProgressChanged?.Invoke();
         }
 
         public void NextLevel() => ContinueAfterCompletion();
 
         public void ContinueAfterCompletion()
         {
-            if (!levelCompleted) return;
+            if (!IsGameplayInputAllowed || !levelCompleted) return;
             audio?.PlayContinue();
             if (levelIndex < CampaignData.Levels.Length - 1) LoadLevel(levelIndex + 1);
             else RestartCampaign();
         }
 
-        public void RestartCampaign() => LoadLevel(0);
+        public void RestartCampaign()
+        {
+            if (!IsGameplayInputAllowed) return;
+            HighestCompletedLevel = 0;
+            LoadLevel(0);
+        }
 
         public bool TryPlaceAt(Vector3Int cell) => TryPlaceAt(cell, true);
 
         private bool TryPlaceAt(Vector3Int cell, bool playFeedback)
         {
-            if (dragging || levelCompleted || !InBounds(cell) || occupied.Contains(cell) || occupied.Count >= level.cubeLimit || !ProjectionRules.IsSupported(cell, occupied)) return false;
+            if (!IsGameplayInputAllowed || level == null || dragging || levelCompleted || !InBounds(cell) || occupied.Contains(cell) || occupied.Count >= level.cubeLimit || !ProjectionRules.IsSupported(cell, occupied)) return false;
             PushHistory(); occupied.Add(cell); SpawnCube(cell); EvaluateAndDisplay();
             if (playFeedback) audio?.PlayPlace();
             return true;
@@ -152,7 +174,7 @@ namespace StructureBuild
 
         public void RemoveTopAt(int x, int z)
         {
-            if (dragging || levelCompleted) return;
+            if (!IsGameplayInputAllowed || level == null || dragging || levelCompleted) return;
             var y = level.height - 1;
             while (y >= 0 && !occupied.Contains(new Vector3Int(x, y, z))) y--;
             if (y < 0) return;
@@ -162,27 +184,27 @@ namespace StructureBuild
 
         public void Undo()
         {
-            if (dragging || levelCompleted || history.Count == 0) return;
+            if (!IsGameplayInputAllowed || dragging || levelCompleted || history.Count == 0) return;
             var previous = history.Pop(); ClearCells(); foreach (var cell in previous) { occupied.Add(cell); SpawnCube(cell); } EvaluateAndDisplay();
             audio?.PlayUndo();
         }
 
         public void ResetCurrentLevel()
         {
-            if (dragging || levelCompleted) return;
+            if (!IsGameplayInputAllowed || level == null || dragging || levelCompleted) return;
             if (occupied.Count > 0) { PushHistory(); audio?.PlayReset(); }
             ClearCells(); EvaluateAndDisplay();
         }
 
         public void Hint()
         {
-            if (dragging || levelCompleted || occupied.Count >= level.cubeLimit) return;
+            if (!IsGameplayInputAllowed || level == null || dragging || levelCompleted || occupied.Count >= level.cubeLimit) return;
             foreach (var data in level.referenceSolution)
             {
                 var cell = data.ToVector3Int();
                 if (!occupied.Contains(cell) && ProjectionRules.IsSupported(cell, occupied))
                 {
-                    TryPlaceAt(cell, false);
+                    if (!TryPlaceAt(cell, false)) continue;
                     audio?.PlayHint();
                     CurrentStatusText = $"提示: 已放置 {cell.x},{cell.y},{cell.z}";
                     if (statusLabel) statusLabel.text = CurrentStatusText;
@@ -193,14 +215,26 @@ namespace StructureBuild
 
         public bool BeginDragFromSource(Ray ray)
         {
-            if (dragging || levelCompleted || level == null) return false;
+            if (!IsGameplayInputAllowed || dragging || levelCompleted || level == null) return false;
             if (occupied.Count >= level.cubeLimit)
             {
                 SetStatus("结构单元已用完，请先移动或撤回方块");
                 return false;
             }
 
-            var start = cubeSource != null ? cubeSource.position : ray.GetPoint(2f);
+            // Spawn the held preview in front of the source instead of at the
+            // source model pivot.  The old pivot start briefly embedded the
+            // hologram inside the pedestal before the first drag update.
+            var sourcePosition = cubeSource != null ? cubeSource.position : ray.GetPoint(2f);
+            var sourceToHand = ray.origin - sourcePosition;
+            if (sourceToHand.sqrMagnitude < 0.0001f) sourceToHand = -ray.direction;
+            // Use a conservative enclosing radius, then add a fixed air gap.
+            // This prevents a large/offset authored cube mesh from touching
+            // the pedestal during the first frame of a source grab.
+            var previewRadius = Mathf.Max(cubeVisualWidth, Mathf.Max(cubeVisualHeight, cubeVisualDepth)) * 0.58f;
+            var clearance = previewRadius + minimumSourcePreviewClearance;
+            var start = sourcePosition + sourceToHand.normalized * clearance +
+                        gridRoot.up * Mathf.Max(cubeVisualHeight * 0.22f, 0.05f);
             BeginDrag(null, start, ray);
             audio?.PlayGrab();
             return true;
@@ -208,7 +242,7 @@ namespace StructureBuild
 
         public bool BeginDragFromCube(PuzzleCubeInteractable cube, Ray ray)
         {
-            if (dragging || levelCompleted || cube == null || !occupied.Contains(cube.cell)) return false;
+            if (!IsGameplayInputAllowed || dragging || levelCompleted || cube == null || !occupied.Contains(cube.cell)) return false;
             if (occupied.Contains(cube.cell + Vector3Int.up))
             {
                 SetStatus("请先移走上方方块");
@@ -228,6 +262,7 @@ namespace StructureBuild
 
         public bool UpdateDrag(Ray ray)
         {
+            if (!IsGameplayInputAllowed) { CancelDrag(); return false; }
             if (!dragging || preview == null) return false;
 
             var previousCell = dragCell;
@@ -259,6 +294,7 @@ namespace StructureBuild
 
         public bool CommitDrag(Ray ray)
         {
+            if (!IsGameplayInputAllowed) { CancelDrag(); return false; }
             if (!dragging) return false;
             UpdateDrag(ray);
             var destination = dragCell;
@@ -309,7 +345,13 @@ namespace StructureBuild
             dragOrigin = origin;
             dragCell = null;
             dragSnapshot = new List<Vector3Int>(occupied);
-            dragFollowDistance = Mathf.Clamp(Vector3.Distance(ray.origin, start), 0.65f, 12f);
+            // Keep the preview a comfortable distance from the controller so
+            // it cannot intersect the hand/controller model while aiming.
+            var previewRadius = Mathf.Max(cubeVisualWidth, Mathf.Max(cubeVisualHeight, cubeVisualDepth)) * 0.58f;
+            dragFollowDistance = Mathf.Clamp(
+                Vector3.Distance(ray.origin, start),
+                Mathf.Max(0.75f, previewRadius + minimumControllerPreviewClearance),
+                12f);
             CreateDragVisual(start);
             UpdateDrag(ray);
         }
@@ -348,6 +390,10 @@ namespace StructureBuild
             if (evaluation.complete && !levelCompleted)
             {
                 levelCompleted = true;
+                HighestCompletedLevel = Mathf.Max(HighestCompletedLevel, CurrentLevelNumber);
+                // Notify before the completion card opens so a guide expiring
+                // at this level is hidden in the very same completion call.
+                CampaignProgressChanged?.Invoke();
                 audio?.PlayComplete();
                 onLevelComplete?.Invoke();
             }
@@ -384,6 +430,7 @@ namespace StructureBuild
 
         private void HandleDesktopInput()
         {
+            if (!IsGameplayInputAllowed) { CancelDrag(); return; }
             if (level == null) return;
             if (Keyboard.current != null)
             {
@@ -403,10 +450,13 @@ namespace StructureBuild
                 if (Keyboard.current.deleteKey.wasPressedThisFrame || Keyboard.current.backspaceKey.wasPressedThisFrame) RemoveTopAt(keyboardColumn.x, keyboardColumn.z);
             }
             if (Mouse.current == null || playerCamera == null) return;
-            if (Mouse.current.leftButton.wasPressedThisFrame)
+            // Raycast now rather than relying on last frame's EventSystem
+            // hover state. A click on spatial UI must never grab a cube behind it.
+            var overUi = IsDesktopPointerOverUi(Mouse.current.position.ReadValue());
+            if (!overUi && Mouse.current.leftButton.wasPressedThisFrame)
             {
                 var ray = playerCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
-                if (Physics.Raycast(ray, out var hit, 100f))
+                if (TryDesktopWorldHit(ray, out var hit))
                 {
                     var source = hit.collider.GetComponentInParent<CubeSourceInteractable>();
                     var cube = hit.collider.GetComponentInParent<PuzzleCubeInteractable>();
@@ -424,17 +474,49 @@ namespace StructureBuild
                 CommitDrag(ray);
                 desktopOwnsDrag = false;
             }
-            if (!dragging && Mouse.current.rightButton.wasPressedThisFrame)
+            if (!overUi && !dragging && Mouse.current.rightButton.wasPressedThisFrame)
             {
                 var ray = playerCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
-                if (Physics.Raycast(ray, out var hit, 100f)) { var cube = hit.collider.GetComponentInParent<PuzzleCubeInteractable>(); if (cube != null) RemoveTopAt(cube.cell.x, cube.cell.z); }
+                if (TryDesktopWorldHit(ray, out var hit)) { var cube = hit.collider.GetComponentInParent<PuzzleCubeInteractable>(); if (cube != null) RemoveTopAt(cube.cell.x, cube.cell.z); }
             }
+        }
+
+        private bool IsDesktopPointerOverUi(Vector2 screenPosition)
+        {
+            var events = EventSystem.current;
+            if (events == null) return false;
+            desktopPointer ??= new PointerEventData(events);
+            desktopPointer.position = screenPosition;
+            desktopUiHits.Clear();
+            events.RaycastAll(desktopPointer, desktopUiHits);
+            foreach (var hit in desktopUiHits)
+            {
+                if (!(hit.module is GraphicRaycaster)) continue;
+                var canvas = hit.gameObject.GetComponentInParent<Canvas>();
+                if (canvas != null && canvas.isActiveAndEnabled) return true;
+            }
+            return false;
+        }
+
+        private static bool TryDesktopWorldHit(Ray ray, out RaycastHit hit)
+        {
+            // A hidden Canvas can outlive its button hit volumes until the
+            // end of this frame. Ignore it even before LateUpdate clears them.
+            foreach (var candidate in Physics.RaycastAll(ray, 100f).OrderBy(item => item.distance))
+            {
+                var canvas = candidate.collider.GetComponentInParent<Canvas>();
+                if (canvas != null && !canvas.isActiveAndEnabled) continue;
+                hit = candidate;
+                return true;
+            }
+            hit = default;
+            return false;
         }
 
         public bool TryGetDropCell(Ray ray, out Vector3Int cell)
         {
             cell = default;
-            if (level == null || gridRoot == null) return false;
+            if (!IsGameplayInputAllowed || level == null || gridRoot == null) return false;
 
             if (TryGetDirectHitColumn(ray, out var directColumn) &&
                 TryGetTopCell(directColumn, out var directCell) && CanPlaceDraggedCell(directCell))

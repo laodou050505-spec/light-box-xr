@@ -12,7 +12,7 @@ namespace StructureBuild
         public bool useFixedOverviewPose = true;
         public float overviewYaw = 45f;
         public float overviewPitch = 28f;
-        public float overviewDistance = 10.40f;
+        public float overviewDistance = 8.32f;
         public Vector3 overviewFocusOffset = Vector3.zero;
         [Range(0.3f, 1.2f)] public float overviewDistanceScale = 0.42f;
         public float overviewDistanceOffset = -0.35f;

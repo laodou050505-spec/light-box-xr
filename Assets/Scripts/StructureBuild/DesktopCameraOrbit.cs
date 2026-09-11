@@ -12,6 +12,10 @@ namespace StructureBuild
         public float minDistance = 1.5f;
         [Tooltip("Large enough for the authored scene to be inspected from outside the projector volumes.")]
         public float maxDistance = 40f;
+        [Tooltip("Lower pitch bound for the desktop preview. Title composition can use a level gaze; gameplay keeps its elevated tabletop view.")]
+        public float minPitch = 8f;
+        [Tooltip("Upper pitch bound for orbiting the scene.")]
+        public float maxPitch = 72f;
         public float yaw = 138f;
         public float pitch = 22f;
         public float orbitSpeed = 0.22f;
@@ -35,7 +39,7 @@ namespace StructureBuild
                 {
                     var delta = mouse.delta.ReadValue();
                     yaw += delta.x * orbitSpeed;
-                    pitch = Mathf.Clamp(pitch - delta.y * orbitSpeed, 8f, 72f);
+                    pitch = Mathf.Clamp(pitch - delta.y * orbitSpeed, minPitch, maxPitch);
                 }
 
                 distance = Mathf.Clamp(distance - mouse.scroll.ReadValue().y * zoomSpeed, minDistance, maxDistance);
@@ -66,7 +70,7 @@ namespace StructureBuild
         public void SetPose(float newYaw, float newPitch, float newDistance)
         {
             yaw = newYaw;
-            pitch = Mathf.Clamp(newPitch, 8f, 72f);
+            pitch = Mathf.Clamp(newPitch, minPitch, maxPitch);
             distance = Mathf.Clamp(newDistance, minDistance, maxDistance);
             if (target != null) ApplyPose();
         }

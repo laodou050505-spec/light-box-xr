@@ -37,8 +37,11 @@ namespace StructureBuild
     {
         public static readonly LevelDefinition[] Levels =
         {
-            Level("archive-001", "三点校准", "先让三枚地面投影同时亮起", 3, new[] {1,1,1,0}, new[] {1,1,1,0},
-                (0,0,0),(1,0,1),(2,0,2)),
+            // Teaching level: two ground cubes expose the same two columns
+            // from the front and side, so the player can immediately see
+            // that both projection boards must turn green together.
+            Level("archive-001", "首次校准", "先放两块地面方块，让正面与侧面同时亮起", 2, new[] {1,1,0,0}, new[] {1,1,0,0},
+                (0,0,0),(1,0,1)),
             Level("archive-002", "初层阶梯", "第一次使用垂直堆叠", 4, new[] {1,2,1,0}, new[] {2,1,1,0},
                 (0,0,1),(1,0,0),(1,1,0),(2,0,2)),
             Level("archive-003", "双峰折线", "让两座高点在侧面错位对应", 5, new[] {2,1,2,0}, new[] {1,2,2,0},

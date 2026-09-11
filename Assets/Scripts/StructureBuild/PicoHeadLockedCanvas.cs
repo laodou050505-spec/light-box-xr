@@ -3,8 +3,8 @@ using UnityEngine;
 namespace StructureBuild
 {
     /// <summary>
-    /// Keeps PICO world-space UI in the player's view so it reads like the
-    /// desktop Unity HUD instead of being anchored to the puzzle table.
+    /// Legacy component name retained for serialized scenes. Supports real
+    /// screen-mounted and fixed-world canvases as well as the old HUD route.
     /// </summary>
     public sealed class PicoHeadLockedCanvas : MonoBehaviour
     {
@@ -13,13 +13,91 @@ namespace StructureBuild
         public float worldScale = 0.00115f;
         public Vector2 viewOffset = Vector2.zero;
         public bool followRotation = true;
+        [Header("Optional spatial placement")]
+        [Tooltip("When assigned, this canvas is placed just in front of the target world screen and copies its orientation.")]
+        public Transform spatialTarget;
+        [Min(0f)] public float spatialGap = 0.12f;
+        public Vector3 spatialLocalOffset;
+        public Vector3 spatialRotationOffset;
+        [Tooltip("Use the authored world position, never a startup tracking sample.")]
+        public bool fixedWorldAnchor;
+        public Vector3 fixedWorldPosition;
+        public Vector3 fixedWorldEuler;
+        [Tooltip("When shown, capture the current view centre once, then remain fixed in space.")]
+        public bool centerOnShow;
 
         private PicoRigBootstrap picoRig;
+        private bool pendingCenter = true;
 
-        private void LateUpdate()
+        public void RequestCenterOnNextShow() => pendingCenter = true;
+
+        public bool TryCenterAfterPoseReady(Camera camera, bool poseReady)
+        {
+            if (!centerOnShow || !pendingCenter || !poseReady || camera == null) return false;
+            var canvas = GetComponent<Canvas>();
+            if (canvas == null || !canvas.isActiveAndEnabled) return false;
+            fixedWorldPosition = camera.transform.position + camera.transform.forward * distance;
+            fixedWorldEuler = camera.transform.eulerAngles;
+            fixedWorldAnchor = true;
+            followRotation = false;
+            pendingCenter = false;
+            return true;
+        }
+
+        public void CaptureWorldPose()
         {
             var camera = ResolveTrackedCamera();
             if (camera == null) return;
+            fixedWorldPosition = camera.transform.position + camera.transform.forward * distance
+                + camera.transform.right * viewOffset.x + camera.transform.up * viewOffset.y;
+            fixedWorldEuler = camera.transform.eulerAngles;
+            fixedWorldAnchor = true;
+            followRotation = false;
+            ApplyPose(camera);
+        }
+
+        private void LateUpdate()
+        {
+            ApplyPose(ResolveTrackedCamera());
+        }
+
+        public void ApplyPose(Camera camera)
+        {
+            if (camera == null) return;
+            if (centerOnShow && Application.isPlaying && pendingCenter)
+            {
+                var canvas = GetComponent<Canvas>();
+                if (canvas != null && canvas.isActiveAndEnabled)
+                {
+                    if (Application.platform == RuntimePlatform.Android)
+                    {
+                        if (picoRig == null) picoRig = FindAnyObjectByType<PicoRigBootstrap>();
+                        if (picoRig == null || !picoRig.HasAppliedDesignedPose) return;
+                    }
+                    TryCenterAfterPoseReady(camera, true);
+                }
+            }
+
+            if (spatialTarget != null)
+            {
+                // The canvas front is local -Z.  Move it toward the player
+                // from the display surface while preserving the display's
+                // own tilt/yaw, so the panel reads as a separate physical
+                // layer rather than a flat HUD pasted over the screen.
+                transform.rotation = spatialTarget.rotation * Quaternion.Euler(spatialRotationOffset);
+                transform.position = spatialTarget.position + spatialTarget.rotation * spatialLocalOffset
+                                     - transform.forward * spatialGap;
+                transform.localScale = Vector3.one * worldScale;
+                return;
+            }
+
+            if (fixedWorldAnchor)
+            {
+                transform.position = fixedWorldPosition;
+                transform.rotation = followRotation ? camera.transform.rotation : Quaternion.Euler(fixedWorldEuler);
+                transform.localScale = Vector3.one * worldScale;
+                return;
+            }
 
             var cameraTransform = camera.transform;
             transform.position = cameraTransform.position

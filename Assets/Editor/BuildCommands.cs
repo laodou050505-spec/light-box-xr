@@ -36,6 +36,22 @@ namespace StructureBuild.Editor
         [MenuItem("Structure Build/Build Desktop QA")]
         public static void BuildDesktop()
         {
+            BuildDesktopTo("Builds/StructureBuild-QA.app");
+        }
+
+        // Keep the currently running desktop test app intact during delivery.
+        public static void BuildPositionOnlyDesktop()
+        {
+            BuildDesktopTo("Builds/StructureBuild-PositionQA.app");
+        }
+
+        public static void BuildTutorialViewDesktop()
+        {
+            BuildDesktopTo("Builds/StructureBuild-TutorialQA.app");
+        }
+
+        private static void BuildDesktopTo(string outputPath)
+        {
             // This project stores its PICO loader settings under Android.
             // Do not flip those serialized Android settings off just because
             // a macOS QA build is requested: doing so made a later PICO APK
@@ -43,7 +59,7 @@ namespace StructureBuild.Editor
             // build happened to repair it. The desktop bootstrap already
             // keeps the XR camera disabled outside Android.
             EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone, BuildTarget.StandaloneOSX);
-            var report = Build(BuildTarget.StandaloneOSX, "Builds/StructureBuild-QA.app");
+            var report = Build(BuildTarget.StandaloneOSX, outputPath);
             if (report.summary.result != BuildResult.Succeeded) throw new System.Exception("Desktop build failed: " + report.summary.result);
         }
 

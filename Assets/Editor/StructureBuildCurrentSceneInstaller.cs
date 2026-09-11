@@ -21,10 +21,12 @@ namespace StructureBuild.Editor
         private const string ScenePath = "Assets/Scenes/StructureBuild.unity";
         private const string InstallRootName = "GameplayPresentation_v2";
         private const string FontAssetPath = "Assets/UI/StructureBuildChineseSDF.asset";
-        private const string BottomBarSkinPath = "Assets/UI/Generated/Prepared/StructureBuild_BottomBar.png";
+        private const string BottomBarSkinPath = "Assets/UI/Generated/NanoBanana20260907/Prepared/StructureBuild_ActionDock.png";
         private const string ButtonSkinPath = "Assets/UI/Generated/Prepared/StructureBuild_Button.png";
-        private const string CompletionPanelSkinPath = "Assets/UI/Generated/Prepared/StructureBuild_CompletionPanel.png";
-        private const string LevelInfoPanelSkinPath = "Assets/UI/Generated/Prepared/StructureBuild_LevelInfoPanel.png";
+        private const string CompletionPanelSkinPath = "Assets/UI/Generated/NanoBanana20260907/Prepared/StructureBuild_CompletionPanel.png";
+        private const string LevelInfoPanelSkinPath = "Assets/UI/Generated/NanoBanana20260907/Prepared/StructureBuild_MissionPanel.png";
+        private const string TutorialPanelSkinPath = "Assets/UI/Generated/NanoBanana20260907/Prepared/StructureBuild_TutorialPanel.png";
+        private const string QuickGuidePanelSkinPath = "Assets/UI/Generated/NanoBanana20260907/Prepared/StructureBuild_QuickGuidePanel.png";
         private const string SmokeStateKey = "StructureBuild.RuntimeSmokeState";
         // These two authored models are called out explicitly because their
         // motion is a visual design decision, not a geometry classification.
@@ -146,6 +148,8 @@ namespace StructureBuild.Editor
             var buttonSkin = LoadUiSkin(ButtonSkinPath, new Vector4(22f, 22f, 22f, 22f));
             var completionPanelSkin = LoadUiSkin(CompletionPanelSkinPath, new Vector4(48f, 48f, 48f, 48f));
             var levelInfoPanelSkin = LoadUiSkin(LevelInfoPanelSkinPath, new Vector4(42f, 42f, 42f, 42f));
+            var tutorialPanelSkin = LoadUiSkin(TutorialPanelSkinPath, Vector4.zero);
+            var quickGuidePanelSkin = LoadUiSkin(QuickGuidePanelSkinPath, Vector4.zero);
             var presentation = FindSceneObject(InstallRootName);
             if (presentation == null)
             {
@@ -177,7 +181,7 @@ namespace StructureBuild.Editor
             cameraViews.useFixedOverviewPose = true;
             cameraViews.overviewYaw = 45f;
             cameraViews.overviewPitch = 28f;
-            cameraViews.overviewDistance = 10.40f;
+            cameraViews.overviewDistance = 8.32f;
             cameraViews.overviewFocusOffset = Vector3.zero;
             cameraViews.overviewDistanceScale = 0.42f;
             cameraViews.overviewDistanceOffset = -0.35f;
@@ -193,18 +197,22 @@ namespace StructureBuild.Editor
             RemoveOwnedChild(presentation.transform, "CompletionOverlay_Pico");
             RemoveOwnedChild(presentation.transform, "GameplayInstructions_Desktop");
             RemoveOwnedChild(presentation.transform, "GameplayInstructions_Pico");
+            RemoveOwnedChild(presentation.transform, "PicoQuickGuide");
             RemoveOwnedChild(presentation.transform, "SpaceBackdrop");
             var designStart = ConfigureDesignPlayerStart(presentation.transform, puzzle, cameraViews);
             var instructions = GetOrAdd<GameplayInstructionsOverlay>(gameObject);
             instructions.audio = audio;
-            // START belongs to the isolated title scene. This is only an
-            // optional in-world refresher the player can reopen later.
-            instructions.visibleAtStartup = false;
+            // START belongs to the isolated title scene. Once the title is
+            // dismissed, show a short first-run teaching card before the
+            // player touches the physical board. It is dismissed locally and
+            // does not cover the title scene or alter the core XR targets.
+            instructions.visibleAtStartup = true;
             EditorUtility.SetDirty(instructions);
             actions.instructions = instructions;
             CreateDesktopHud(presentation.transform, game, actions, font, bottomBarSkin, buttonSkin, completionPanelSkin, levelInfoPanelSkin);
-            CreateWorldHud(presentation.transform, puzzle, designStart, game, actions, font, buttonSkin, completionPanelSkin, levelInfoPanelSkin);
-            CreateGameplayInstructions(presentation.transform, puzzle, designStart, actions, instructions, font, buttonSkin);
+            CreateWorldHud(presentation.transform, puzzle, designStart, game, actions, font, bottomBarSkin, buttonSkin, completionPanelSkin, levelInfoPanelSkin);
+            CreatePicoQuickGuide(presentation.transform, font, quickGuidePanelSkin);
+            CreateGameplayInstructions(presentation.transform, puzzle, designStart, actions, instructions, font, buttonSkin, tutorialPanelSkin);
             CreateSpaceBackdrop(presentation.transform, root);
             BindXRInteractions(game);
             BindPicoRig(designStart);
@@ -214,6 +222,8 @@ namespace StructureBuild.Editor
             // lights. Preserve their enabled state and all light properties;
             // only the generated projector rigs are managed by the installer.
             PreserveAuthoredSceneLights();
+
+            StructureBuildOpticalPanels.ApplyToLoadedScene();
 
             AssertExistingTransformsUnchanged(existingTransforms);
             EditorUtility.SetDirty(game);
@@ -256,6 +266,7 @@ namespace StructureBuild.Editor
             var picoWorldHud = FindSceneObject("PicoWorldHUD");
             var picoActionDock = FindSceneObject("PicoActionDock");
             var picoInstructions = FindSceneObject("GameplayInstructions_Pico");
+            var picoQuickGuide = FindSceneObject("PicoQuickGuide");
             Require(picoWorldHud?.GetComponent<StructureScreenHUD>() != null, "PICO world console is missing.");
             Require(picoActionDock?.GetComponent<Canvas>() != null && picoActionDock.GetComponent<PicoHeadLockedCanvas>() != null &&
                     picoActionDock.GetComponent<PicoRuntimeCanvasVisibility>() != null,
@@ -269,6 +280,35 @@ namespace StructureBuild.Editor
             Require(FindSceneObject("GameSystems")?.GetComponent<StructureAudioController>() != null, "Structure audio controller is missing.");
             Require(FindSceneObject("GameSystems")?.GetComponent<GameplayInstructionsOverlay>() != null, "Gameplay instructions controller is missing.");
             Require(FindSceneObject("GameplayInstructions_Desktop") != null && picoInstructions != null, "Gameplay instructions canvases are missing.");
+            Require(picoQuickGuide?.GetComponent<Canvas>()?.renderMode == RenderMode.WorldSpace &&
+                    picoQuickGuide.GetComponent<PicoHeadLockedCanvas>() != null &&
+                    picoQuickGuide.GetComponent<PicoRuntimeCanvasVisibility>() != null &&
+                    picoQuickGuide.GetComponent<PicoRuntimeCanvasVisibility>()?.showOnDesktop == true &&
+                    picoQuickGuide.GetComponent<PicoRuntimeCanvasVisibility>()?.hideAfterCompletedLevel == 3,
+                "The upper-right PICO guide must retire after level 3 completes.");
+            var quickGuideFollower = picoQuickGuide.GetComponent<PicoHeadLockedCanvas>();
+            var quickGuideRect = picoQuickGuide.GetComponent<RectTransform>();
+            var quickGuideBody = picoQuickGuide.GetComponentsInChildren<TextMeshProUGUI>(true)
+                .FirstOrDefault(item => item.name == "Body");
+            var missionRect = picoWorldHud.GetComponentsInChildren<RectTransform>(true)
+                .FirstOrDefault(item => item.name == "MissionReadout");
+            Require(quickGuideFollower != null && quickGuideRect != null && missionRect != null,
+                "The PICO guide or mission panel geometry is missing.");
+            var missionFollower = picoWorldHud.GetComponent<PicoHeadLockedCanvas>();
+            var missionRootRect = picoWorldHud.GetComponent<RectTransform>();
+            var quickGuideTop = quickGuideFollower.viewOffset.y + quickGuideRect.sizeDelta.y * quickGuideFollower.worldScale * 0.5f;
+            var missionTop = missionFollower.viewOffset.y +
+                             (missionRootRect.sizeDelta.y * (missionRect.anchorMax.y - missionRootRect.pivot.y) +
+                              missionRect.anchoredPosition.y + missionRect.sizeDelta.y * (1f - missionRect.pivot.y)) *
+                             missionFollower.worldScale;
+            Require(quickGuideFollower.viewOffset.x > 0.55f && quickGuideFollower.viewOffset.y > 0.55f &&
+                    quickGuideRect.sizeDelta.x < picoWorldHud.GetComponent<RectTransform>().sizeDelta.x &&
+                    Mathf.Abs(quickGuideTop - missionTop) < 0.01f &&
+                    quickGuideRect.sizeDelta.y * quickGuideFollower.worldScale >= missionRect.sizeDelta.y * missionFollower.worldScale * 0.98f &&
+                    quickGuideRect.sizeDelta.y * quickGuideFollower.worldScale <= missionRect.sizeDelta.y * missionFollower.worldScale * 1.02f &&
+                    quickGuideBody != null && quickGuideBody.fontSize >= 22f &&
+                    quickGuideBody.text.Contains("下一关"),
+                "The persistent quick guide must remain readable, narrower than the mission panel, and top-aligned at matching visible height.");
             var audio = FindSceneObject("GameSystems")?.GetComponent<StructureAudioController>();
             Require(audio != null && audio.musicClip != null && audio.grabClip != null && audio.placeClip != null &&
                     audio.rejectClip != null && audio.completeClip != null, "One or more required audio clips are not assigned.");
@@ -290,7 +330,12 @@ namespace StructureBuild.Editor
                 "PICO HUD and instructions must be world-space canvases following the active player view.");
             Require(picoWorldHud.GetComponent<PicoRuntimeCanvasVisibility>()?.canvas == picoWorldHud.GetComponent<Canvas>() &&
                     picoActionDock.GetComponent<PicoRuntimeCanvasVisibility>()?.canvas == picoActionDock.GetComponent<Canvas>() &&
+                    picoWorldHud.GetComponent<PicoRuntimeCanvasVisibility>()?.showOnDesktop == true &&
+                    picoActionDock.GetComponent<PicoRuntimeCanvasVisibility>()?.showOnDesktop == true &&
+                    picoWorldHud.GetComponent<PicoRuntimeCanvasVisibility>()?.hideAfterCompletedLevel == 0 &&
+                    picoActionDock.GetComponent<PicoRuntimeCanvasVisibility>()?.hideAfterCompletedLevel == 0 &&
                     picoWorldHud.GetComponent<StructureScreenHUD>()?.showOnlyWhenXRActive == true &&
+                    picoWorldHud.GetComponent<StructureScreenHUD>()?.showWorldSpaceOnDesktop == true &&
                     FindSceneObject("DesktopHUD")?.GetComponent<StructureScreenHUD>()?.hideWhenXRActive == true,
                 "Desktop and PICO HUD routes must be mutually exclusive.");
             Require(picoActionDock.GetComponent<Canvas>()?.renderMode == RenderMode.WorldSpace && picoDockFollower != null &&
@@ -307,6 +352,28 @@ namespace StructureBuild.Editor
             var xrInteractions = FindSceneObjects<WorldSpaceInteraction>();
             Require(xrInteractions.Length >= 2 && xrInteractions.All(item => item.rayOrigin != null && item.rayLine != null),
                 "Both PICO controller world-space rays must be bound.");
+            Require(xrInteractions.All(item => item.uiAimAssistRadius >= 0.025f),
+                "Both PICO controller rays must keep the UI aim-assist radius enabled.");
+            Require(FindSceneObject("CompletionDetail")?.GetComponent<TextMeshProUGUI>() != null &&
+                    FindSceneObject("CompletionProgress")?.GetComponent<TextMeshProUGUI>() != null &&
+                    FindSceneObject("CompletionPayload") == null,
+                "PICO completion detail and progress must use independent line-aligned text fields.");
+            Require(game.cubeSource != null && game.cubeSource.GetComponentInChildren<Collider>(true) != null,
+                "The cube source needs a collider for the clear-of-pedestal drag preview path.");
+            Require(game.minimumControllerPreviewClearance >= 0.18f && game.minimumSourcePreviewClearance >= 0.12f,
+                "Dragged cube previews need explicit controller and source clearances to prevent model clipping.");
+            var requiredChinese = "光匣教学关开始练习指向左侧方块源按扳机抓取棋盘橙色高亮松开自动吸附正面侧面投影都青绿色完成点击下一关";
+            var cjkFont = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontAssetPath);
+            Require(cjkFont != null && requiredChinese.All(character => cjkFont.HasCharacter(character)),
+                "The static Chinese font atlas is missing one or more visible teaching characters.");
+            var teachingLabel = picoInstructions.GetComponentsInChildren<TextMeshProUGUI>(true)
+                .FirstOrDefault(item => item.name == "Label" && item.text == "开始练习");
+            Require(teachingLabel != null && teachingLabel.text.All(character => char.IsWhiteSpace(character) || cjkFont.HasCharacter(character)),
+                "The teaching button contains a character that cannot be rendered by the static Chinese font atlas.");
+            var teachingBody = picoInstructions.GetComponentsInChildren<TextMeshProUGUI>(true)
+                .FirstOrDefault(item => item.name == "Body");
+            Require(teachingBody != null && teachingBody.text.All(character => char.IsWhiteSpace(character) || cjkFont.HasCharacter(character)),
+                "The teaching body contains a character that cannot be rendered by the static Chinese font atlas.");
             Require(FindSceneObjects<SpaceDriftMotion>().All(IsAuthorizedSpaceDecorMotion),
                 "A fixed gameplay model has an unauthorized drift motion.");
             var spaceDecorRoots = FindSceneObjects<Transform>().Where(IsSpaceDecorRoot).ToArray();
@@ -539,6 +606,8 @@ namespace StructureBuild.Editor
             game.groundCellNamePrefix = "WorkbenchTop_Editable";
             game.usePlacedGridMarkers = true;
             game.fitCubeToPrefabBounds = true;
+            game.minimumControllerPreviewClearance = 0.18f;
+            game.minimumSourcePreviewClearance = 0.12f;
             game.gridCubeFill = 0.80f;
             Require(game.gridRoot != null && game.cubeSource != null && game.frontPanel != null && game.sidePanel != null && game.cubePrefab != null,
                 "Unable to bind the placed grid, cube source, projection panels, or cube prefab.");
@@ -566,8 +635,9 @@ namespace StructureBuild.Editor
             anchor.focalAnchor = puzzle;
             anchor.focalOffset = new Vector3(0f, 1.67f, 0f);
             anchor.yaw = 45f;
-            anchor.viewingDistance = 9.18f;
-            anchor.eyeHeight = 7.49f;
+            anchor.viewingDistance = DesignPlayerStart.GameplayViewingDistance;
+            anchor.viewingLateralOffset = DesignPlayerStart.GameplayLateralOffset;
+            anchor.eyeHeight = DesignPlayerStart.GameplayEyeHeight;
             anchor.fallbackHeadLocalPosition = Vector3.up * 1.60f;
             anchor.SynchronizeAnchor();
             cameraViews.designStart = anchor;
@@ -653,7 +723,8 @@ namespace StructureBuild.Editor
             StructureHUDController actions,
             GameplayInstructionsOverlay controller,
             TMP_FontAsset font,
-            Sprite buttonSkin)
+            Sprite buttonSkin,
+            Sprite tutorialPanelSkin)
         {
             var desktop = CreateRect("GameplayInstructions_Desktop", parent);
             var desktopCanvas = desktop.AddComponent<Canvas>();
@@ -669,34 +740,34 @@ namespace StructureBuild.Editor
             var desktopDimmer = CreatePanel("Dimmer", desktopLayer.transform, new Color(0.002f, 0.009f, 0.018f, 0.82f));
             SetAnchors(desktopDimmer.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f));
             var desktopCard = CreatePanel("Card", desktopLayer.transform, new Color(0.012f, 0.08f, 0.11f, 0.985f));
-            SetAnchors(desktopCard.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(760f, 470f), new Vector2(0.5f, 0.5f));
-            var desktopAccent = CreatePanel("Accent", desktopCard.transform, Cyan);
-            SetAnchors(desktopAccent.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(0f, 6f), new Vector2(0.5f, 1f));
-            var desktopEyebrow = CreateText("Eyebrow", desktopCard.transform, font, "STRUCTURE ARCHIVE  /  CONTROL REMINDER", 15f, Amber, FontStyles.Bold, TextAlignmentOptions.Center);
-            SetAnchors(desktopEyebrow.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -38f), new Vector2(0f, 26f), new Vector2(0.5f, 1f));
-            var desktopTitle = CreateText("Title", desktopCard.transform, font, "玩法说明", 36f, Ice, FontStyles.Bold, TextAlignmentOptions.Center);
-            SetAnchors(desktopTitle.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -76f), new Vector2(0f, 58f), new Vector2(0.5f, 1f));
+            ApplyUiSkinUnstretched(desktopCard, tutorialPanelSkin);
+            SetAnchors(desktopCard.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(720f, 540f), new Vector2(0.5f, 0.5f));
+            var desktopEyebrow = CreateText("Eyebrow", desktopCard.transform, font, "LIGHTBOX  /  FIRST ARCHIVE", 15f, Amber, FontStyles.Bold, TextAlignmentOptions.Center);
+            SetAnchors(desktopEyebrow.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -42f), new Vector2(-100f, 26f), new Vector2(0.5f, 1f));
+            var desktopTitle = CreateText("Title", desktopCard.transform, font, "光匣教学关", 36f, Ice, FontStyles.Bold, TextAlignmentOptions.Center);
+            SetAnchors(desktopTitle.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -82f), new Vector2(-100f, 54f), new Vector2(0.5f, 1f));
             var desktopBody = CreateText("Body", desktopCard.transform, font,
-                "1  从方块源抓取结构方块\n2  拖到 4 × 4 棋盘，松手后自动吸附\n3  同时匹配正面与侧面投影提示\n4  可用提示、撤回、重置；关卡按顺序推进",
-                20f, Muted, FontStyles.Normal, TextAlignmentOptions.Left);
-            SetAnchors(desktopBody.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(92f, -158f), new Vector2(-184f, 150f), new Vector2(0.5f, 1f));
+                "教学关只需 2 块地面方块\n1  指向左侧方块源，按扳机抓取\n2  拖到棋盘橙色高亮格，松开后自动吸附\n3  让正面与侧面投影都变成青绿色\n完成后点击下一关，继续后面的档案",
+                19f, Muted, FontStyles.Normal, TextAlignmentOptions.Left);
+            desktopBody.lineSpacing = 8f;
+            SetAnchors(desktopBody.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(74f, -160f), new Vector2(-148f, 220f), new Vector2(0.5f, 1f));
             var desktopButton = CreatePanel("StartButton", desktopCard.transform, new Color(0.02f, 0.27f, 0.29f, 1f));
             ApplyUiSkin(desktopButton, buttonSkin);
-            SetAnchors(desktopButton.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 28f), new Vector2(280f, 68f), new Vector2(0.5f, 0f));
+            SetAnchors(desktopButton.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 44f), new Vector2(260f, 64f), new Vector2(0.5f, 0f));
             var desktopButtonBehaviour = desktopButton.gameObject.AddComponent<StructureScreenButton>();
             desktopButtonBehaviour.hud = actions;
             desktopButtonBehaviour.action = StructureUIButtonAction.DismissInstructions;
             desktopButtonBehaviour.background = desktopButton;
             desktopButtonBehaviour.normalColor = Color.white;
             desktopButtonBehaviour.hoverColor = new Color(0.78f, 1f, 1f, 1f);
-            var desktopButtonLabel = CreateText("Label", desktopButton.transform, font, "知道了", 24f, Ice, FontStyles.Bold, TextAlignmentOptions.Center);
+            var desktopButtonLabel = CreateText("Label", desktopButton.transform, font, "开始练习", 24f, Ice, FontStyles.Bold, TextAlignmentOptions.Center);
             SetAnchors(desktopButtonLabel.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f));
 
             var pico = CreateRect("GameplayInstructions_Pico", parent);
             // The onboarding card deliberately occupies the central comfort
             // zone while it is visible, so its copy can be read inside a
             // headset without leaning toward the board.
-            pico.GetComponent<RectTransform>().sizeDelta = new Vector2(1320f, 820f);
+            pico.GetComponent<RectTransform>().sizeDelta = new Vector2(1040f, 780f);
             ConfigureViewLockedCanvas(pico, 1.72f, 0.00130f, new Vector2(0f, -0.02f));
             var picoCanvas = pico.AddComponent<Canvas>();
             picoCanvas.renderMode = RenderMode.WorldSpace;
@@ -704,34 +775,37 @@ namespace StructureBuild.Editor
             pico.AddComponent<GraphicRaycaster>();
             var picoPanel = pico.AddComponent<Image>();
             picoPanel.color = new Color(0.008f, 0.04f, 0.065f, 0.97f);
+            ApplyUiSkinUnstretched(picoPanel, tutorialPanelSkin);
             var picoLayer = CreateRect("Layer", pico.transform);
             SetAnchors(picoLayer.GetComponent<RectTransform>(), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f));
-            var picoAccent = CreatePanel("Accent", picoLayer.transform, Cyan);
-            SetAnchors(picoAccent.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(0f, 8f), new Vector2(0.5f, 1f));
-            var picoTitle = CreateText("Title", picoLayer.transform, font, "操作提示", 54f, Ice, FontStyles.Bold, TextAlignmentOptions.Center);
-            SetAnchors(picoTitle.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -64f), new Vector2(0f, 66f), new Vector2(0.5f, 1f));
+            var picoTitle = CreateText("Title", picoLayer.transform, font, "光匣教学关", 46f, Ice, FontStyles.Bold, TextAlignmentOptions.Center);
+            SetAnchors(picoTitle.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -78f), new Vector2(-128f, 62f), new Vector2(0.5f, 1f));
             var picoBody = CreateText("Body", picoLayer.transform, font,
-                "从方块源抓取方块，拖到 4 × 4 棋盘\n松手后会自动吸附到合法格\n同时匹配正面与侧面投影提示\n提示、撤回、重置可随时使用\n关卡会按顺序推进",
-                37f, Muted, FontStyles.Normal, TextAlignmentOptions.Left);
-            SetAnchors(picoBody.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(98f, -184f), new Vector2(-196f, 268f), new Vector2(0.5f, 1f));
+                "教学关只需 2 块地面方块\n1  指向左侧方块源，按扳机抓取\n2  拖到棋盘橙色高亮格，松开后自动吸附\n3  让正面与侧面投影都变成青绿色\n完成后点击下一关，继续后面的档案",
+                31f, Muted, FontStyles.Normal, TextAlignmentOptions.Left);
+            picoBody.lineSpacing = 12f;
+            SetAnchors(picoBody.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(82f, -178f), new Vector2(-164f, 310f), new Vector2(0.5f, 1f));
             var picoButton = CreatePanel("StartButton", picoLayer.transform, new Color(0.02f, 0.27f, 0.29f, 1f));
             ApplyUiSkin(picoButton, buttonSkin);
-            SetAnchors(picoButton.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 44f), new Vector2(430f, 116f), new Vector2(0.5f, 0f));
+            // Keep the live target fully inside the artwork's circular lower
+            // dock; the enlarged collider remains forgiving for the ray.
+            SetAnchors(picoButton.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 64f), new Vector2(260f, 58f), new Vector2(0.5f, 0f));
             var picoCollider = picoButton.gameObject.AddComponent<BoxCollider>();
-            picoCollider.size = new Vector3(430f, 116f, 10f);
+            picoCollider.size = new Vector3(480f, 152f, 22f);
             var picoButtonBehaviour = picoButton.gameObject.AddComponent<StructureUIButton>();
             picoButtonBehaviour.hud = actions;
             picoButtonBehaviour.action = StructureUIButtonAction.DismissInstructions;
             picoButtonBehaviour.backgroundGraphic = picoButton;
             picoButtonBehaviour.normalColor = Color.white;
             picoButtonBehaviour.highlightedColor = new Color(0.78f, 1f, 1f, 1f);
-            var picoButtonLabel = CreateText("Label", picoButton.transform, font, "知道了", 38f, Ice, FontStyles.Bold, TextAlignmentOptions.Center);
+            var picoButtonLabel = CreateText("Label", picoButton.transform, font, "开始练习", 27f, Ice, FontStyles.Bold, TextAlignmentOptions.Center);
             SetAnchors(picoButtonLabel.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f));
 
             controller.desktopPanelRoot = desktopLayer.gameObject;
             controller.picoPanelRoot = picoLayer.gameObject;
             controller.desktopCanvas = desktopCanvas;
             controller.picoCanvas = picoCanvas;
+            controller.useSpatialUiOnDesktop = true;
             controller.audio = FindSceneObject("GameSystems")?.GetComponent<StructureAudioController>();
             desktop.SetActive(true);
             pico.SetActive(true);
@@ -758,7 +832,7 @@ namespace StructureBuild.Editor
             root.AddComponent<GraphicRaycaster>();
 
             var info = CreatePanel("MissionReadout", root.transform, Panel);
-            ApplyUiSkin(info, levelInfoPanelSkin);
+            ApplyUiSkinUnstretched(info, levelInfoPanelSkin);
             SetAnchors(info.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(28f, -28f), new Vector2(510f, 186f), new Vector2(0f, 1f));
             var accent = CreatePanel("Accent", info.transform, Amber);
             SetAnchors(accent.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 1f), Vector2.zero, new Vector2(5f, 0f), new Vector2(0f, 0.5f));
@@ -775,7 +849,7 @@ namespace StructureBuild.Editor
             SetAnchors(view.rectTransform, new Vector2(0.5f, 0f), new Vector2(1f, 0f), new Vector2(8f, 19f), new Vector2(-20f, 24f), new Vector2(0f, 0f));
 
             var dock = CreatePanel("ActionDock", root.transform, Ink);
-            ApplyUiSkin(dock, bottomBarSkin);
+            ApplyUiSkinUnstretched(dock, bottomBarSkin);
             SetAnchors(dock.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 28f), new Vector2(800f, 70f), new Vector2(0.5f, 0f));
             var horizontal = dock.gameObject.AddComponent<HorizontalLayoutGroup>();
             horizontal.padding = new RectOffset(10, 10, 10, 10);
@@ -799,6 +873,7 @@ namespace StructureBuild.Editor
             hud.actions = actions;
             hud.canvas = canvas;
             hud.hideWhenXRActive = true;
+            hud.showWorldSpaceOnDesktop = true;
             hud.levelText = level;
             hud.ruleText = rule;
             hud.statusText = status;
@@ -814,6 +889,7 @@ namespace StructureBuild.Editor
             StructureGameController game,
             StructureHUDController actions,
             TMP_FontAsset font,
+            Sprite bottomBarSkin,
             Sprite buttonSkin,
             Sprite completionPanelSkin,
             Sprite levelInfoPanelSkin)
@@ -825,63 +901,67 @@ namespace StructureBuild.Editor
             // Keep the diagnostic readout compact: the physical target cards
             // remain the player's focal point.  The old 1160 x 580 layout
             // left a large unused lower field in the headset view.
-            root.GetComponent<RectTransform>().sizeDelta = new Vector2(940f, 390f);
+            root.GetComponent<RectTransform>().sizeDelta = new Vector2(940f, 470f);
             // Keep the diagnostic board above the physical projection cards:
             // it belongs in the upper-left comfort field, not across the
             // puzzle's actual front/side prompts.  Pull it a little inward
             // too, so its full left edge stays inside the headset view.
-            ConfigureViewLockedCanvas(root, 1.68f, 0.00116f, new Vector2(-0.66f, 0.88f));
+            ConfigureViewLockedCanvas(root, 1.68f, 0.00110f, new Vector2(-0.66f, 0.88f));
             var canvas = root.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.WorldSpace;
             canvas.sortingOrder = 80;
             root.AddComponent<GraphicRaycaster>();
-            root.AddComponent<PicoRuntimeCanvasVisibility>().canvas = canvas;
+            var worldVisibility = root.AddComponent<PicoRuntimeCanvasVisibility>();
+            worldVisibility.canvas = canvas;
+            worldVisibility.showOnDesktop = true;
+            worldVisibility.hideAfterCompletedLevel = 0;
 
             var info = CreatePanel("MissionReadout", root.transform, Panel);
-            ApplyUiSkin(info, levelInfoPanelSkin);
-            SetAnchors(info.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(22f, -22f), new Vector2(896f, 326f), new Vector2(0f, 1f));
-            var accent = CreatePanel("Accent", info.transform, Amber);
-            SetAnchors(accent.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 1f), Vector2.zero, new Vector2(5f, 0f), new Vector2(0f, 0.5f));
+            ApplyUiSkinUnstretched(info, levelInfoPanelSkin);
+            SetAnchors(info.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -20f), new Vector2(900f, 426f), new Vector2(0f, 1f));
             // Four concise, evenly spaced information lines use the full
             // panel instead of leaving a decorative but empty lower half.
-            var level = CreateText("Level", info.transform, font, "结构档案 01 / 12", 38f, Ice, FontStyles.Normal, TextAlignmentOptions.TopLeft);
-            SetAnchors(level.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(60f, -18f), new Vector2(-42f, 52f), new Vector2(0f, 1f));
-            var rule = CreateText("Rule", info.transform, font, "分析两面投影，复原空间结构", 25f, Muted, FontStyles.Normal, TextAlignmentOptions.Left);
-            SetAnchors(rule.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(60f, -72f), new Vector2(-42f, 36f), new Vector2(0f, 1f));
-            var status = CreateText("Status", info.transform, font, "等待结构输入", 28f, Amber, FontStyles.Bold, TextAlignmentOptions.Left);
-            SetAnchors(status.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(60f, -122f), new Vector2(-42f, 38f), new Vector2(0f, 1f));
-            var cube = CreateText("CubeCount", info.transform, font, "结构单元 0 / 3", 25f, Cyan, FontStyles.Bold, TextAlignmentOptions.Left);
-            SetAnchors(cube.rectTransform, new Vector2(0f, 0f), new Vector2(0.5f, 0f), new Vector2(60f, 24f), new Vector2(-8f, 34f), new Vector2(0f, 0f));
-            var view = CreateText("View", info.transform, font, "视角  概览", 25f, Cyan, FontStyles.Bold, TextAlignmentOptions.Right);
-            SetAnchors(view.rectTransform, new Vector2(0.5f, 0f), new Vector2(1f, 0f), new Vector2(12f, 24f), new Vector2(-34f, 34f), new Vector2(0f, 0f));
+            var level = CreateText("Level", info.transform, font, "结构档案 01 / 12", 33f, Ice, FontStyles.Bold, TextAlignmentOptions.TopLeft);
+            SetAnchors(level.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(58f, -28f), new Vector2(-100f, 44f), new Vector2(0f, 1f));
+            var rule = CreateText("Rule", info.transform, font, "分析两面投影，复原空间结构", 22f, Muted, FontStyles.Normal, TextAlignmentOptions.Left);
+            SetAnchors(rule.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(58f, -82f), new Vector2(-100f, 34f), new Vector2(0f, 1f));
+            var status = CreateText("Status", info.transform, font, "等待结构输入", 25f, Amber, FontStyles.Bold, TextAlignmentOptions.Left);
+            SetAnchors(status.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(58f, -132f), new Vector2(-100f, 36f), new Vector2(0f, 1f));
+            var cube = CreateText("CubeCount", info.transform, font, "结构单元 0 / 3", 23f, Cyan, FontStyles.Bold, TextAlignmentOptions.Left);
+            SetAnchors(cube.rectTransform, new Vector2(0f, 0f), new Vector2(0.5f, 0f), new Vector2(58f, 24f), new Vector2(-16f, 34f), new Vector2(0f, 0f));
+            var view = CreateText("View", info.transform, font, "视角  概览", 23f, Cyan, FontStyles.Bold, TextAlignmentOptions.Right);
+            SetAnchors(view.rectTransform, new Vector2(0.5f, 0f), new Vector2(1f, 0f), new Vector2(12f, 24f), new Vector2(-62f, 34f), new Vector2(0f, 0f));
 
             var dockRoot = CreateRect("PicoActionDock", parent);
-            dockRoot.GetComponent<RectTransform>().sizeDelta = new Vector2(1600f, 190f);
+            dockRoot.GetComponent<RectTransform>().sizeDelta = new Vector2(1142f, 384f);
             // A wide lower-centre strip matches the designed XR composition
             // and provides touch targets large enough for a controller ray.
             // The action dock is deliberately low enough to leave the board
             // and both projection prompts unobscured at the natural gaze.
-            ConfigureViewLockedCanvas(dockRoot, 1.70f, 0.00125f, new Vector2(0f, -1.14f));
+            ConfigureViewLockedCanvas(dockRoot, 1.70f, 0.00108f, new Vector2(0f, -1.16f));
             var dockCanvas = dockRoot.AddComponent<Canvas>();
             dockCanvas.renderMode = RenderMode.WorldSpace;
             dockCanvas.sortingOrder = 100;
             dockRoot.AddComponent<GraphicRaycaster>();
-            dockRoot.AddComponent<PicoRuntimeCanvasVisibility>().canvas = dockCanvas;
+            var dockVisibility = dockRoot.AddComponent<PicoRuntimeCanvasVisibility>();
+            dockVisibility.canvas = dockCanvas;
+            dockVisibility.showOnDesktop = true;
+            dockVisibility.hideAfterCompletedLevel = 0;
             var dock = CreatePanel("ActionDock", dockRoot.transform, Ink);
-            ApplyUiSkin(dock, buttonSkin);
+            ApplyUiSkinUnstretched(dock, bottomBarSkin);
             SetAnchors(dock.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f));
             // Keep the whole six-action loop available in XR, matching the
             // desktop and Three.js prototype: hint, undo, reset and the three
             // deliberate camera views.  The compressed but unwarped buttons
             // fit in one lower-centre panel inside the PICO comfort frame.
-            const float buttonWidth = 222f;
-            const float buttonHeight = 108f;
-            CreateWorldButton(dock.transform, font, "提示", StructureUIButtonAction.Hint, actions, new Vector2(-590f, 0f), Amber, buttonSkin, new Vector2(buttonWidth, buttonHeight));
-            CreateWorldButton(dock.transform, font, "撤回", StructureUIButtonAction.Undo, actions, new Vector2(-354f, 0f), Cyan, buttonSkin, new Vector2(buttonWidth, buttonHeight));
-            CreateWorldButton(dock.transform, font, "重置", StructureUIButtonAction.Reset, actions, new Vector2(-118f, 0f), new Color(0.92f, 0.38f, 0.26f, 1f), buttonSkin, new Vector2(buttonWidth, buttonHeight));
-            CreateWorldButton(dock.transform, font, "概览", StructureUIButtonAction.Overview, actions, new Vector2(118f, 0f), Ice, buttonSkin, new Vector2(buttonWidth, buttonHeight));
-            CreateWorldButton(dock.transform, font, "正面", StructureUIButtonAction.Front, actions, new Vector2(354f, 0f), Ice, buttonSkin, new Vector2(buttonWidth, buttonHeight));
-            CreateWorldButton(dock.transform, font, "侧面", StructureUIButtonAction.Side, actions, new Vector2(590f, 0f), Ice, buttonSkin, new Vector2(buttonWidth, buttonHeight));
+            const float buttonWidth = 150f;
+            const float buttonHeight = 190f;
+            CreateWorldButton(dock.transform, font, "提示", StructureUIButtonAction.Hint, actions, new Vector2(-465f, -8f), Amber, null, new Vector2(buttonWidth, buttonHeight));
+            CreateWorldButton(dock.transform, font, "撤回", StructureUIButtonAction.Undo, actions, new Vector2(-279f, -8f), Cyan, null, new Vector2(buttonWidth, buttonHeight));
+            CreateWorldButton(dock.transform, font, "重置", StructureUIButtonAction.Reset, actions, new Vector2(-93f, -8f), new Color(0.92f, 0.38f, 0.26f, 1f), null, new Vector2(buttonWidth, buttonHeight));
+            CreateWorldButton(dock.transform, font, "概览", StructureUIButtonAction.Overview, actions, new Vector2(93f, -8f), Ice, null, new Vector2(buttonWidth, buttonHeight));
+            CreateWorldButton(dock.transform, font, "正面", StructureUIButtonAction.Front, actions, new Vector2(279f, -8f), Ice, null, new Vector2(buttonWidth, buttonHeight));
+            CreateWorldButton(dock.transform, font, "侧面", StructureUIButtonAction.Side, actions, new Vector2(465f, -8f), Ice, null, new Vector2(buttonWidth, buttonHeight));
             // The completion card sits at the centre of the user's view and
             // follows head movement so the next-level action is never lost.
             CreatePicoCompletionOverlay(parent, designStart, game, actions, font, buttonSkin, completionPanelSkin);
@@ -892,6 +972,7 @@ namespace StructureBuild.Editor
             hud.canvas = canvas;
             hud.hideWhenXRActive = false;
             hud.showOnlyWhenXRActive = true;
+            hud.showWorldSpaceOnDesktop = true;
             hud.levelText = level;
             hud.ruleText = rule;
             hud.statusText = status;
@@ -902,6 +983,42 @@ namespace StructureBuild.Editor
             game.cubeCountLabel = cube;
             actions.viewLabel = view;
             actions.messageLabel = status;
+        }
+
+        private static void CreatePicoQuickGuide(Transform parent, TMP_FontAsset font, Sprite quickGuidePanelSkin)
+        {
+            var root = CreateRect("PicoQuickGuide", parent);
+            root.GetComponent<RectTransform>().sizeDelta = new Vector2(620f, 392f);
+            // Match the visible top edge of the mission panel while keeping
+            // this compact guide materially narrower.  The mission artwork's
+            // top is 0.88 + (215 * 0.00110) = 1.1165 m above the view centre;
+            // this full-height 392 px frame reaches the same top at
+            // 0.8813 + (196 * 0.00120) = 1.1165 m.
+            ConfigureViewLockedCanvas(root, 1.70f, 0.00120f, new Vector2(0.68f, 0.8813f));
+            var canvas = root.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.WorldSpace;
+            canvas.sortingOrder = 90;
+            root.AddComponent<GraphicRaycaster>();
+            var guideVisibility = root.AddComponent<PicoRuntimeCanvasVisibility>();
+            guideVisibility.canvas = canvas;
+            guideVisibility.showOnDesktop = true;
+            guideVisibility.hideAfterCompletedLevel = 3;
+
+            var panel = CreatePanel("GuidePanel", root.transform, new Color(0.008f, 0.045f, 0.066f, 0.90f));
+            ApplyUiSkinUnstretched(panel, quickGuidePanelSkin);
+            SetAnchors(panel.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f));
+            var title = CreateText("Title", panel.transform, font, "操作提示", 27f, Ice, FontStyles.Bold, TextAlignmentOptions.TopLeft);
+            SetAnchors(title.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(60f, -35f), new Vector2(-118f, 38f), new Vector2(0f, 1f));
+            var body = CreateText("Body", panel.transform, font,
+                "1  指向左侧方块源，按扳机抓取\n" +
+                "2  拖到棋盘橙色高亮格，松开后吸附\n" +
+                "3  让正面与侧面投影变成青绿色\n" +
+                "完成后点击下一关",
+                22f, new Color(0.62f, 0.87f, 0.91f, 1f), FontStyles.Normal, TextAlignmentOptions.TopLeft);
+            body.textWrappingMode = TextWrappingModes.NoWrap;
+            body.overflowMode = TextOverflowModes.Ellipsis;
+            body.lineSpacing = 12f;
+            SetAnchors(body.rectTransform, new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(60f, 30f), new Vector2(-112f, -112f), new Vector2(0f, 0f));
         }
 
         private static void CreateSpaceBackdrop(Transform parent, Transform sceneRoot)
@@ -1021,6 +1138,14 @@ namespace StructureBuild.Editor
                 interaction.game = game;
                 interaction.rayOrigin ??= interaction.transform;
                 interaction.rayLine ??= interaction.GetComponent<LineRenderer>();
+                interaction.uiAimAssistRadius = 0.032f;
+                if (interaction.rayLine != null)
+                {
+                    interaction.rayLine.startWidth = 0.010f;
+                    interaction.rayLine.endWidth = 0.0035f;
+                    interaction.rayLine.startColor = new Color(0.24f, 1f, 0.96f, 0.95f);
+                    interaction.rayLine.endColor = new Color(0.24f, 0.90f, 1f, 0.32f);
+                }
                 EditorUtility.SetDirty(interaction);
             }
         }
@@ -1050,7 +1175,7 @@ namespace StructureBuild.Editor
         private static TMP_FontAsset EnsureChineseFontAsset()
         {
             var characters = " 0123456789/·,.，；、…:-+×ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" +
-                "结构档案分析两面投影复原空间单元等待输入正面侧面吻合完成当前视角概览提示撤回重置方块已放置未命中合法网格位置全部个三点校准先让枚地同时亮起初层阶梯第一次使用垂直堆叠双峰折线座高点在错位对应信标匹配四列不同高度棱镜辨认塔与的回声需要正确换位终端光门组合进入深层折光回廊让共用深度双核偏振同一必须在深处留下第二核心暗列阵把藏进条光柱四壁共振用主同时遮住三层终极光栅满压缩成脊游戏操作面板释放拖动高亮区域落点返回取消请先移走上方结构用完移动下一关重新开始归档准备进入本轮探索已通过校验全结构将到棋盘磁性吸附玩法说明从左侧源抓取一个拖到松手后自动吸附同时匹配可用关卡按顺序推进开始游戏启动会随以有限两道控制器射线指向按钮并按下扳机桌面版可直接点击退出光匣";
+                "结构档案分析两面投影复原空间单元等待输入正面侧面吻合完成当前视角概览提示撤回重置方块已放置未命中合法网格位置全部个三点校准首次先让枚地同时亮起初层阶梯第一次使用垂直堆叠双峰折线座高点在错位对应信标匹配四列不同高度棱镜辨认塔与的回声需要正确换位终端光门组合进入深层折光回廊让共用深度双核偏振同一必须在深处留下第二核心暗列阵把藏进条光柱四壁共振用主同时遮住三层终极光栅满压缩成脊游戏操作面板释放拖动高亮区域落点返回取消请先移走上方结构用完下一关重新开始归档准备进入本轮探索已通过校验全结构将到棋盘磁性吸附玩法说明从左侧源抓取一个拖到松开后自动吸附同时匹配可用关卡按顺序推进开始游戏启动会随以有限两道控制器射线指向按钮并按下扳机桌面版可直接点击退出光匣教学只需块指向左扳机抓取橙色格都变成青绿色后继续档案首次校准放两地面练习操作提示棋盘松开点击";
             foreach (var level in CampaignData.Levels) characters += level.displayName + level.rule;
             var existing = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontAssetPath);
             if (existing != null)
@@ -1110,7 +1235,7 @@ namespace StructureBuild.Editor
             SetAnchors(dimmer.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f));
 
             var card = CreatePanel("Card", layer.transform, new Color(0.015f, 0.085f, 0.12f, 0.985f));
-            ApplyUiSkin(card, completionPanelSkin);
+            ApplyUiSkinUnstretched(card, completionPanelSkin);
             SetAnchors(card.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(720f, 390f), new Vector2(0.5f, 0.5f));
             var topAccent = CreatePanel("TopAccent", card.transform, Cyan);
             SetAnchors(topAccent.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(0f, 5f), new Vector2(0.5f, 1f));
@@ -1169,7 +1294,7 @@ namespace StructureBuild.Editor
             var layer = CreateRect("Layer", host.transform);
             SetAnchors(layer.GetComponent<RectTransform>(), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f));
             var card = CreatePanel("Card", layer.transform, new Color(0.012f, 0.09f, 0.12f, 0.985f));
-            ApplyUiSkin(card, completionPanelSkin);
+            ApplyUiSkinUnstretched(card, completionPanelSkin);
             SetAnchors(card.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1180f, 600f), new Vector2(0.5f, 0.5f));
             var topAccent = CreatePanel("TopAccent", card.transform, Cyan);
             SetAnchors(topAccent.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(0f, 5f), new Vector2(0.5f, 1f));
@@ -1183,23 +1308,26 @@ namespace StructureBuild.Editor
             title.textWrappingMode = TextWrappingModes.NoWrap;
             title.overflowMode = TextOverflowModes.Overflow;
             SetAnchors(title.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 145f), new Vector2(940f, 84f), new Vector2(0.5f, 0.5f));
-            // One TMP mesh deliberately carries the two lower information
-            // lines.  This retains the PICO compositor reliability guard
-            // while aligning each line to one of the card's lower rules.
-            var payload = CreateText("CompletionPayload", card.transform, font,
-                "<align=\"center\"><size=29><color=#B8DDE6>档案 01 已通过双面投影校验</color></size>\n<size=27><color=#73F4FF>准备进入档案 02</color></size></align>",
-                29f, new Color(0.82f, 0.96f, 1f, 1f), FontStyles.Normal, TextAlignmentOptions.Center);
-            payload.richText = true;
-            payload.textWrappingMode = TextWrappingModes.NoWrap;
-            payload.overflowMode = TextOverflowModes.Overflow;
-            payload.alignment = TextAlignmentOptions.Center;
-            payload.lineSpacing = 30f;
-            SetAnchors(payload.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -52f), new Vector2(940f, 120f), new Vector2(0.5f, 0.5f));
+            // Keep each readout on its own authored data rail. Two independent
+            // text rects are more predictable than line-spacing offsets and
+            // let long Chinese copy be fitted without touching either rule.
+            var detail = CreateText("CompletionDetail", card.transform, font,
+                "档案 01 已通过双面投影校验", 25f, new Color(0.72f, 0.87f, 0.90f, 1f), FontStyles.Normal, TextAlignmentOptions.Center);
+            detail.enableAutoSizing = true;
+            detail.fontSizeMin = 20f;
+            detail.fontSizeMax = 25f;
+            SetAnchors(detail.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -6f), new Vector2(850f, 38f), new Vector2(0.5f, 0.5f));
+            var progress = CreateText("CompletionProgress", card.transform, font,
+                "准备进入档案 02", 23f, new Color(0.45f, 0.96f, 1f, 1f), FontStyles.Normal, TextAlignmentOptions.Center);
+            progress.enableAutoSizing = true;
+            progress.fontSizeMin = 19f;
+            progress.fontSizeMax = 23f;
+            SetAnchors(progress.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -76f), new Vector2(850f, 36f), new Vector2(0.5f, 0.5f));
             var button = CreatePanel("ContinueButton", card.transform, new Color(0.02f, 0.27f, 0.29f, 1f));
             ApplyUiSkin(button, buttonSkin);
             SetAnchors(button.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 36f), new Vector2(350f, 86f), new Vector2(0.5f, 0f));
             var collider = button.gameObject.AddComponent<BoxCollider>();
-            collider.size = new Vector3(350f, 86f, 10f);
+            collider.size = new Vector3(420f, 126f, 22f);
             var buttonBehaviour = button.gameObject.AddComponent<StructureUIButton>();
             buttonBehaviour.hud = actions;
             buttonBehaviour.action = StructureUIButtonAction.Continue;
@@ -1211,7 +1339,9 @@ namespace StructureBuild.Editor
 
             overlay.panelRoot = layer.gameObject;
             overlay.titleText = title;
-            overlay.combinedPayloadText = payload;
+            overlay.detailText = detail;
+            overlay.progressText = progress;
+            overlay.combinedPayloadText = null;
             overlay.continueLabel = buttonLabel;
             layer.gameObject.SetActive(false);
             return overlay;
@@ -1255,7 +1385,9 @@ namespace StructureBuild.Editor
             ApplyUiSkin(button, buttonSkin);
             SetAnchors(button.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), position, size, new Vector2(0.5f, 0.5f));
             var collider = button.gameObject.AddComponent<BoxCollider>();
-            collider.size = new Vector3(size.x, size.y, 10f);
+            // Preserve clear horizontal separation between adjacent actions,
+            // but make the vertical and depth target more forgiving in VR.
+            collider.size = new Vector3(size.x, size.y + 34f, 20f);
             var behaviour = button.gameObject.AddComponent<StructureUIButton>();
             behaviour.hud = hud;
             behaviour.action = action;
@@ -1347,6 +1479,15 @@ namespace StructureBuild.Editor
             image.color = Color.white;
         }
 
+        private static void ApplyUiSkinUnstretched(Image image, Sprite skin)
+        {
+            if (image == null || skin == null) return;
+            image.sprite = skin;
+            image.type = Image.Type.Simple;
+            image.preserveAspect = true;
+            image.color = Color.white;
+        }
+
         private static Image CreatePanel(string name, Transform parent, Color color)
         {
             var gameObject = CreateRect(name, parent);
@@ -1393,7 +1534,14 @@ namespace StructureBuild.Editor
         private static Dictionary<Transform, TransformState> CaptureExistingTransforms(Scene scene)
         {
             var result = new Dictionary<Transform, TransformState>();
-            foreach (var transform in FindSceneObjects<Transform>()) result[transform] = new TransformState(transform);
+            foreach (var transform in FindSceneObjects<Transform>())
+            {
+                // Opening composition explicitly owns these view transforms.
+                // Their children and every other authored transform stay protected.
+                if (transform.GetComponent<Camera>() != null || transform.GetComponent<DesignPlayerStart>() != null ||
+                    transform.GetComponent<PicoRigBootstrap>() != null) continue;
+                result[transform] = new TransformState(transform);
+            }
             return result;
         }
 

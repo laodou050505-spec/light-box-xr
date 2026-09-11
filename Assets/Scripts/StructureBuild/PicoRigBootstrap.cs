@@ -23,6 +23,11 @@ namespace StructureBuild
         private bool recenterWasPressed;
         private bool picoRuntime;
         private Coroutine pendingPoseRestore;
+        private PicoViewPitchOffset viewPitchOffset;
+        private bool awaitingFirstTrackedPose;
+
+        public bool HasAppliedDesignedPose { get; private set; }
+        public PicoViewPitchOffset ViewPitchOffset => viewPitchOffset;
 
         private void Awake()
         {
@@ -30,6 +35,7 @@ namespace StructureBuild
             if (picoManager != null) picoManager.enabled = picoRuntime;
             desktopCamera = FindDesktopCamera();
             if (designStart == null) designStart = FindAnyObjectByType<DesignPlayerStart>();
+            EnsureViewPitchOffset();
 
             // Android builds are PICO immersive builds, not an Android-window
             // fallback.  Select the stereo camera before PXR_Manager's Awake.
@@ -58,6 +64,17 @@ namespace StructureBuild
         {
             var headset = InputDevices.GetDeviceAtXRNode(XRNode.Head);
             var hasHeadset = headset.isValid;
+            if (picoRuntime && awaitingFirstTrackedPose && pendingPoseRestore == null && HasUsableHeadPosition(headset))
+            {
+                awaitingFirstTrackedPose = false;
+                ApplyDesignedPoseNow();
+                // A late device sample can replace the serialized fallback
+                // eye offset. Re-centre the visible teaching card exactly once
+                // at the corrected eye instead of stranding it behind us.
+                foreach (var panel in FindObjectsByType<PicoHeadLockedCanvas>(FindObjectsInactive.Include))
+                    if (panel.centerOnShow) panel.RequestCenterOnNextShow();
+                LogDesignedPose("first-live-tracking-after-fallback", false);
+            }
             var rightController = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
             var recenterPressed = false;
             if (rightController.isValid) rightController.TryGetFeatureValue(CommonUsages.primary2DAxisClick, out recenterPressed);
@@ -114,6 +131,8 @@ namespace StructureBuild
         {
             if (!picoRuntime || designStart == null) return;
             if (pendingPoseRestore != null) StopCoroutine(pendingPoseRestore);
+            awaitingFirstTrackedPose = false;
+            HasAppliedDesignedPose = false;
             pendingPoseRestore = StartCoroutine(ApplyDesignedPoseAfterTrackingUpdate());
         }
 
@@ -121,9 +140,60 @@ namespace StructureBuild
         {
             yield return null;
             yield return null;
-            designStart.ApplyXrRigPose(transform, xrCamera != null ? xrCamera.transform : null);
-            Debug.Log($"STRUCTURE_XR_DESIGN_START_APPLIED: eye={designStart.DesignedEyePosition:F2}, yaw={designStart.yaw:F1}, floorEyeHeight={designStart.eyeHeight:F2}.");
+            // XR initialization can take longer than a fixed frame delay.
+            // Do not position the rig against the serialized no-device pose
+            // while a real floor-space head sample is still coming online.
+            var deadline = Time.realtimeSinceStartup + 5f;
+            var hasTrackedPosition = HasUsableHeadPosition(InputDevices.GetDeviceAtXRNode(XRNode.Head));
+            while (!hasTrackedPosition && Time.realtimeSinceStartup < deadline)
+            {
+                yield return null;
+                hasTrackedPosition = HasUsableHeadPosition(InputDevices.GetDeviceAtXRNode(XRNode.Head));
+            }
+            awaitingFirstTrackedPose = !hasTrackedPosition;
+            if (awaitingFirstTrackedPose)
+                Debug.LogWarning("STRUCTURE_XR_TRACKING_FALLBACK: no usable head position after 5 seconds; using the authored fallback temporarily and will calibrate once when tracking becomes available.");
+            ApplyDesignedPoseNow();
+            LogDesignedPose("tracking-origin-settled", awaitingFirstTrackedPose);
             pendingPoseRestore = null;
+        }
+
+        private static bool HasUsableHeadPosition(InputDevice headset)
+        {
+            if (!headset.isValid || !headset.TryGetFeatureValue(CommonUsages.devicePosition, out var position)) return false;
+            if (headset.TryGetFeatureValue(CommonUsages.isTracked, out var tracked) && !tracked) return false;
+            return !float.IsNaN(position.x) && !float.IsNaN(position.y) && !float.IsNaN(position.z)
+                && !float.IsInfinity(position.x) && !float.IsInfinity(position.y) && !float.IsInfinity(position.z);
+        }
+
+        private void LogDesignedPose(string source, bool trackingFallback)
+        {
+            Debug.Log($"STRUCTURE_XR_DESIGN_START_APPLIED: source={source}, trackingFallback={trackingFallback}, eye={designStart.DesignedEyePosition:F2}, yaw={designStart.yaw:F1}, rigEuler={transform.eulerAngles:F2}, rootUp={transform.up:F3}, cameraEuler={(xrCamera != null ? xrCamera.transform.eulerAngles : Vector3.zero):F2}, viewPitch={(viewPitchOffset != null ? viewPitchOffset.PitchDegrees : 0f):F1}, referencePitchEnabled={designStart.useReferenceViewPitch}, floorEyeHeight={designStart.eyeHeight:F2}.");
+        }
+
+        public void EnsureViewPitchOffset()
+        {
+            if (designStart == null || xrCamera == null || !designStart.useReferenceViewPitch) return;
+            if (viewPitchOffset == null)
+            {
+                var existing = transform.Find("GameplayViewOrientation");
+                var pivot = existing != null ? existing : new GameObject("GameplayViewOrientation").transform;
+                viewPitchOffset = pivot.GetComponent<PicoViewPitchOffset>();
+                if (viewPitchOffset == null) viewPitchOffset = pivot.gameObject.AddComponent<PicoViewPitchOffset>();
+            }
+            viewPitchOffset.Configure(designStart, transform, xrCamera.transform);
+        }
+
+        /// <summary>Apply only after the tracking origin has settled. Public for runtime QA.</summary>
+        public void ApplyDesignedPoseNow()
+        {
+            if (designStart == null || xrCamera == null) return;
+            EnsureViewPitchOffset();
+            if (viewPitchOffset != null) viewPitchOffset.RefreshTrackedPoseAndCompensation();
+            else xrCamera.GetComponent<PicoControllerPose>()?.RefreshTrackedPose();
+            designStart.ApplyXrRigPose(transform, xrCamera.transform);
+            viewPitchOffset?.ApplyCompensation();
+            HasAppliedDesignedPose = true;
         }
 
         private Camera FindDesktopCamera()

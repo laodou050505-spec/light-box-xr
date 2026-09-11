@@ -1,34 +1,56 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace StructureBuild
 {
     /// <summary>
-    /// Shows a PICO-only auxiliary world canvas exclusively in the packaged
-    /// Android player. The Unity Editor can expose a virtual Head InputDevice
-    /// while previewing an XR package; treating that as a PICO runtime made
-    /// both the desktop HUD and this canvas appear together in Game View.
-    /// Platform is the unambiguous split for this project: desktop gets the
-    /// screen-space HUD, while the PICO APK gets the view-locked world HUD.
+    /// Controls the shared spatial HUD on PICO and desktop. Tutorial visibility
+    /// comes from its state owner rather than another component's Canvas flag,
+    /// so component update order cannot revive or suppress the wrong canvas.
     /// </summary>
     [RequireComponent(typeof(Canvas))]
     public sealed class PicoRuntimeCanvasVisibility : MonoBehaviour
     {
         public Canvas canvas;
+        public bool showOnDesktop;
+        [Min(0), Tooltip("Hide after this level is completed for the rest of the current campaign run. Zero keeps the canvas available.")]
+        public int hideAfterCompletedLevel;
+
+        private GameplayInstructionsOverlay instructions;
+        private StructureGameController game;
+        private GraphicRaycaster raycaster;
 
         private void Awake()
         {
             if (canvas == null) canvas = GetComponent<Canvas>();
-            Apply();
+            raycaster = GetComponent<GraphicRaycaster>();
+            instructions = FindAnyObjectByType<GameplayInstructionsOverlay>();
+            game = FindAnyObjectByType<StructureGameController>();
+            if (game != null) game.CampaignProgressChanged += RefreshVisibility;
+            RefreshVisibility();
         }
 
-        private void Update() => Apply();
-
-        private void Apply()
+        private void OnDestroy()
         {
+            if (game != null) game.CampaignProgressChanged -= RefreshVisibility;
+        }
+
+        private void Update() => RefreshVisibility();
+
+        public void RefreshVisibility()
+        {
+            if (canvas == null) canvas = GetComponent<Canvas>();
+            if (instructions == null) instructions = FindAnyObjectByType<GameplayInstructionsOverlay>();
             if (canvas == null) return;
-            // Do not infer the presentation route from a connected/virtual
-            // HMD here. Only the Android build is the PICO player route.
-            canvas.enabled = Application.platform == RuntimePlatform.Android;
+            var spatialRoute = showOnDesktop || Application.platform == RuntimePlatform.Android ||
+                               (instructions != null && instructions.UsesSpatialUi);
+            var tutorialVisible = instructions != null && instructions.UsesSpatialUi && instructions.IsVisible;
+            var guideExpired = hideAfterCompletedLevel > 0 && game != null &&
+                               (game.HighestCompletedLevel >= hideAfterCompletedLevel ||
+                                game.CurrentLevelNumber > hideAfterCompletedLevel);
+            canvas.enabled = spatialRoute && !tutorialVisible && !guideExpired;
+            if (raycaster == null) raycaster = GetComponent<GraphicRaycaster>();
+            if (raycaster != null) raycaster.enabled = canvas.enabled;
         }
     }
 }

@@ -3,6 +3,8 @@ using System.Collections;
 using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
 
 namespace StructureBuild
 {
@@ -70,9 +72,46 @@ namespace StructureBuild
             yield return CaptureAfterFrame("01-title-silent-2s.png");
             Debug.Log("STRUCTURE_TITLE_EVIDENCE_TITLE_OK: two-second silent title capture contains only opaque TitleCover and title controls.");
 
-            // This deliberately calls the same public method the START world
-            // button calls. The following check proves Single-mode unloading.
-            title.BeginGame();
+            // Exercise screen-space input through the real raycast path and
+            // verify focus can leave one target and enter the other.
+            InputSystem.settings.backgroundBehavior = InputSettings.BackgroundBehavior.IgnoreFocus;
+            foreach (var device in InputSystem.devices)
+                if (device is Mouse) InputSystem.DisableDevice(device);
+            var mouse = InputSystem.AddDevice<Mouse>("TitleEvidenceMouse");
+            mouse.MakeCurrent();
+            var startButton = GameObject.Find("START").GetComponent<StructureTitleButton>();
+            var exitButton = GameObject.Find("EXIT").GetComponent<StructureTitleButton>();
+            foreach (var button in new[] { exitButton, startButton })
+            {
+                var screen = (Vector2)titleCamera.WorldToScreenPoint(button.transform.position);
+                var ray = titleCamera.ScreenPointToRay(screen);
+                if (!Physics.Raycast(ray, out var hit, 20f) || hit.collider.GetComponentInParent<StructureTitleButton>() != button)
+                {
+                    Fail("STRUCTURE_TITLE_EVIDENCE_FAIL: artwork button is not reachable by its screen-space ray.");
+                    yield break;
+                }
+                InputSystem.QueueStateEvent(mouse, new MouseState { position = screen });
+                yield return new WaitForSecondsRealtime(0.4f);
+                if (button.focusGraphic == null || button.focusGraphic.color.a < 0.9f)
+                {
+                    Fail("STRUCTURE_TITLE_EVIDENCE_FAIL: mouse hover did not illuminate " + button.name +
+                        "; current=" + Mouse.current?.name + "; mouse=" + Mouse.current?.position.ReadValue() +
+                        "; expected=" + screen + "; camera=" + Camera.main?.name);
+                    yield break;
+                }
+                yield return CaptureAfterFrame("01-hover-" + button.name.ToLowerInvariant() + ".png");
+            }
+            if (exitButton.focusGraphic.color.a > 0.1f)
+            {
+                Fail("STRUCTURE_TITLE_EVIDENCE_FAIL: previous button remained focused after pointer left.");
+                yield break;
+            }
+            var clickPosition = (Vector2)titleCamera.WorldToScreenPoint(startButton.transform.position);
+            InputSystem.QueueStateEvent(mouse, new MouseState { position = clickPosition }.WithButton(MouseButton.Left));
+            yield return null;
+            yield return CaptureAfterFrame("01-start-pressed.png");
+            InputSystem.QueueStateEvent(mouse, new MouseState { position = clickPosition });
+            Debug.Log("STRUCTURE_TITLE_POINTER_OK: both artwork hit targets, mouse hover/leave and actual START press exercised.");
             yield return WaitForScene(GameplaySceneName, 15f);
             yield return new WaitForSeconds(1f);
             var game = FindAnyObjectByType<StructureGameController>();
