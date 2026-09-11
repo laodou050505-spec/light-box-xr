@@ -1,0 +1,19 @@
+{
+  "task_id": "f66a8f18-4c55-4db1-b6ce-14e628250847",
+  "status": "success",
+  "type": "image_to_image",
+  "progress": 100,
+  "input": {
+    "prompt": "Design a production-ready blank game UI panel background texture. Reference the attached LUMEN BOX cover ONLY for its midnight navy, porcelain silver metal and amber optical glass material language. Replace the entire cover composition with ONE completely front-facing flat rectangular panel, edge-to-edge, no perspective, no surroundings. No words, letters, numbers, icons, buttons, input slots, lines through the content, grids, holograms or cyan neon. The interior is a perfectly calm very dark midnight blue (#0B1327 to #111D35) matte field, at least 86 percent empty and uniform, ready for readable live white Chinese text. A beautiful extremely thin brushed silver double rim lies within the outermost 2 percent, with slightly chamfered corners; a tiny restrained amber translucent glass inset lives only at the top right corner, maximum 5 percent width. Quiet premium optical instrument aesthetic, immaculate finish. No large circle, arch or cube in the interior. No white background. The entire rectangle is opaque, no transparent holes. All ornament confined to outer edges. Very wide low horizontal control console, landscape 21:9; continuous empty interior, absolutely NO pre-drawn buttons or divisions. Preserve this exact panel family.",
+    "model_version": "banana_pro"
+  },
+  "output": {
+    "generated_image_url": "https://tripo-data.rg1.data.tripo3d.com/tcli_c6fae067c9334bd9af3d07029c0e7b00/20260908/f66a8f18-4c55-4db1-b6ce-14e628250847/generated_image.png?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly90cmlwby1kYXRhLnJnMS5kYXRhLnRyaXBvM2QuY29tL3RjbGlfYzZmYWUwNjdjOTMzNGJkOWFmM2QwNzAyOWMwZTdiMDAvMjAyNjA5MDgvZjY2YThmMTgtNGM1NS00ZGIxLWI2Y2UtMTRlNjI4MjUwODQ3L2dlbmVyYXRlZF9pbWFnZS5wbmciLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE3ODg5NDAzMzF9fX1dfQ__&Signature=nNuFY4yLxUVatJYBk91sge03N~feTfvA9eXCZzZ8DFs9JvHRvmwEHT4rHI98HTAcVkK4KH10LR-0qqKHCvc3-mQOLp~ZZMjB0aAnAzXP3sGuxCyoKgF7Ifq0OOnH5hAOJewGOjtmauDNm2s7mnG-BT7klwAfjWo97C~-QWaJmai9Q1xUtVKPt7AJrE8xjeZhWgXOB~J5si1PlbeYD2jWM0sqFiCUjlxiDUqgrLdo7EhtcQmIxaUm1fIpOyJKvVYDayGO1VMq3iE377ni9sEX3G4~~XEbjQHQrXTpoCLGZ2gLAL6oq3xTh3KYIFIA8AtDbONoq2CfZsI~~2AQ7bk4sA__&Key-Pair-Id=K1676C64NMVM2J"
+  },
+  "created_at": "2026-09-08T07:51:19.161828Z",
+  "completed_at": "2026-09-08T07:52:09.665123Z",
+  "credits_consumed": 15.0,
+  "downloaded_files": [
+    "/Users/ld/Documents/Codex/结构构建/Assets/UI/Generated/OpticalPanels20260908/Dock/01_generated_image_url.png"
+  ]
+}
