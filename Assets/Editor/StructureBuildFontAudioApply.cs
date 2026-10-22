@@ -501,23 +501,21 @@ namespace StructureBuild.Editor
                 switch (state)
                 {
                     case ButtonVisualState.Hover:
+                        // 与运行时 StructureTitleButton.Update() 相同的逻辑：
+                        // 保证截图里看到的效果和玩家在头显里看到的一致。
                         if (btn.graphic != null)
                         {
-                            // +25% 亮度，上限 1（使背景明显变亮）
+                            // 背景 +25% 亮度
                             var hc = btn.highlightedColor;
                             btn.graphic.color = new Color(Mathf.Min(hc.r * 1.25f, 1f), Mathf.Min(hc.g * 1.25f, 1f), Mathf.Min(hc.b * 1.25f, 1f), hc.a);
-                            // 删除旧 Outline，重新添加琥珀色外发光
-                            foreach (var old in btn.graphic.GetComponents<UnityEngine.UI.Outline>())
-                                UnityEngine.Object.DestroyImmediate(old);
-                            var outline = btn.graphic.gameObject.AddComponent<UnityEngine.UI.Outline>();
-                            outline.effectColor = new Color(1f, 0.75f, 0.34f, 1f); // 琥珀
-                            outline.effectDistance = new Vector2(8f, -8f);
-                            EditorUtility.SetDirty(outline);
                         }
+                        // 外发光 Image（预先放在按钮后面的兄弟节点）
+                        if (btn.glowImage != null)
+                            btn.glowImage.color = new Color(btn.focusColor.r, btn.focusColor.g, btn.focusColor.b, 0.55f);
                         if (btn.focusGraphic != null)
-                            btn.focusGraphic.color = btn.focusColor;  // amber glow
+                            btn.focusGraphic.color = btn.focusColor;  // 下划线 amber
                         if (btn.focusLine != null)
-                            btn.focusLine.localScale = Vector3.one;   // fully expanded underline
+                            btn.focusLine.localScale = Vector3.one;   // 完全展开
                         btn.transform.localScale = baseScale * btn.hoverScale; // 1.05x
                         break;
                     case ButtonVisualState.Press:
@@ -551,13 +549,8 @@ namespace StructureBuild.Editor
                 var baseScale = btn.transform.localScale;
                 if (Mathf.Abs(baseScale.x - 1.05f) < 0.01f || Mathf.Abs(baseScale.x - 0.97f) < 0.01f)
                     baseScale = Vector3.one;
-                if (btn.graphic != null)
-                {
-                    btn.graphic.color = btn.normalColor;
-                    // 移除截图时临时添加的 Outline 发光组件，避免污染保存的场景
-                    foreach (var old in btn.graphic.GetComponents<UnityEngine.UI.Outline>())
-                        UnityEngine.Object.DestroyImmediate(old);
-                }
+                if (btn.graphic != null) btn.graphic.color = btn.normalColor;
+                if (btn.glowImage != null) btn.glowImage.color = Color.clear; // 外发光归零
                 if (btn.focusGraphic != null) btn.focusGraphic.color = Color.clear;
                 if (btn.focusLine != null) btn.focusLine.localScale = new Vector3(0.16f, 1f, 1f);
                 btn.transform.localScale = baseScale;

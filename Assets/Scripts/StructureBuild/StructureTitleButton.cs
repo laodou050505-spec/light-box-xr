@@ -27,6 +27,11 @@ namespace StructureBuild
         public Graphic focusGraphic;
         public Color focusColor = new Color(1f, 0.75f, 0.34f, 1f);
 
+        [Tooltip("Pre-placed Image sized slightly larger than the button (placed behind it in the hierarchy). " +
+                 "Fades in as amber on hover to create a visible outer-glow effect in the headset. " +
+                 "Assign via StructureBuildTitleSceneInstaller; must be a sibling of this object's Transform.")]
+        public Graphic glowImage;
+
         [Header("Scale Feedback (Optical Archive)")]
         [Tooltip("Scale multiplier while hovered (e.g. 1.05 = +5%).")]
         public float hoverScale = 1.05f;
@@ -47,6 +52,7 @@ namespace StructureBuild
             if (graphic == null) graphic = GetComponent<Graphic>();
             if (graphic != null) graphic.color = normalColor;
             if (focusGraphic != null) focusGraphic.color = Color.clear;
+            if (glowImage != null) glowImage.color = Color.clear;
             baseLocalScale = transform.localScale;
         }
 
@@ -80,16 +86,30 @@ namespace StructureBuild
             emphasis = Mathf.Lerp(emphasis, hovered || pressed ? 1f : 0f,
                 1f - Mathf.Exp(-14f * Time.unscaledDeltaTime));
 
-            // Colour: press flash → amber, hover → teal, idle → deep blue.
+            // Colour: press flash → warm amber, hover → highlighted (+25% brightness), idle → normal.
             if (graphic != null)
             {
                 if (pressed)
                     graphic.color = Color.Lerp(new Color(1f, 0.88f, 0.63f, 0.35f), normalColor, Mathf.Clamp01((Time.unscaledTime - (pressedUntil - 0.18f)) / 0.18f));
                 else
-                    graphic.color = Color.Lerp(normalColor, highlightedColor, emphasis);
+                {
+                    // +25% brightness on hover makes the background visibly lighter in the headset.
+                    var brightHighlight = new Color(
+                        Mathf.Min(highlightedColor.r * 1.25f, 1f),
+                        Mathf.Min(highlightedColor.g * 1.25f, 1f),
+                        Mathf.Min(highlightedColor.b * 1.25f, 1f),
+                        highlightedColor.a);
+                    graphic.color = Color.Lerp(normalColor, brightHighlight, emphasis);
+                }
             }
 
-            // Focus glow — amber, brightened during hover.
+            // Outer glow image: amber, fades in on hover. Sized 24 px larger than the button on each
+            // side (placed as a sibling behind this button) so the glow spills outside the hit area.
+            if (glowImage != null)
+                glowImage.color = new Color(focusColor.r, focusColor.g, focusColor.b,
+                    Mathf.Clamp01(emphasis * 0.55f));
+
+            // Focus underline — amber, brightened during hover.
             if (focusGraphic != null)
             {
                 var glowAlpha = emphasis * (pressed ? 1.6f : 1f);
@@ -118,6 +138,7 @@ namespace StructureBuild
             wasHovered = false;
             if (graphic != null) graphic.color = normalColor;
             if (focusGraphic != null) focusGraphic.color = Color.clear;
+            if (glowImage != null) glowImage.color = Color.clear;
             transform.localScale = baseLocalScale;
         }
     }

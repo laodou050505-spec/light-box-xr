@@ -252,8 +252,47 @@ namespace StructureBuild.Editor
                 orbit.GetComponent<Camera>().fieldOfView = 80f;
                 start.ApplyDesktopPose(orbit);
             }
+            // Ensure each button has its GlowBg sibling Image for the hover glow effect.
+            // Safe to call on existing scenes: it recreates the glow sibling when missing.
+            RefreshButtonGlows();
             EditorSceneManager.MarkSceneDirty(scene);
             AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>
+        /// Creates or refreshes the GlowBg sibling Image for each StructureTitleButton.
+        /// The glow Image is placed at a lower sibling index than the button so it renders
+        /// behind it; StructureTitleButton.glowImage drives its alpha at runtime.
+        /// </summary>
+        private static void RefreshButtonGlows()
+        {
+            var buttons = UnityEngine.Object.FindObjectsByType<StructureTitleButton>(FindObjectsInactive.Include);
+            foreach (var btn in buttons)
+            {
+                if (btn.glowImage != null) continue; // already assigned (e.g. from CreateOrRefreshTitleScene)
+                var parent = btn.transform.parent;
+                if (parent == null) continue;
+                var buttonRect = btn.GetComponent<RectTransform>();
+                if (buttonRect == null) continue;
+                // Remove stale glow left from a previous run.
+                var existing = parent.Find(btn.name + "Glow");
+                if (existing != null) UnityEngine.Object.DestroyImmediate(existing.gameObject);
+                var go = new GameObject(btn.name + "Glow", typeof(RectTransform), typeof(Image));
+                go.transform.SetParent(parent, false);
+                var img = go.GetComponent<Image>();
+                img.color = Color.clear;
+                img.raycastTarget = false;
+                var rect = go.GetComponent<RectTransform>();
+                rect.anchorMin = new Vector2(0.5f, 0.5f);
+                rect.anchorMax = new Vector2(0.5f, 0.5f);
+                rect.pivot = new Vector2(0.5f, 0.5f);
+                rect.anchoredPosition = buttonRect.anchoredPosition;
+                rect.sizeDelta = buttonRect.sizeDelta + new Vector2(24f, 24f);
+                go.transform.SetSiblingIndex(btn.transform.GetSiblingIndex());
+                btn.glowImage = img;
+                EditorUtility.SetDirty(btn);
+                Debug.Log($"[TitleSceneInstaller] RefreshButtonGlows: created {go.name} for {btn.name}");
+            }
         }
 
         private static Vector3 DesignedCoverPosition(DesignPlayerStart start)
@@ -333,13 +372,24 @@ namespace StructureBuild.Editor
             behavior.action = action;
             behavior.graphic = button;
             behavior.normalColor = Color.clear;
-            behavior.highlightedColor = new Color(accent.r, accent.g, accent.b, 0.12f);
+            behavior.highlightedColor = new Color(accent.r, accent.g, accent.b, 0.20f);
             behavior.focusColor = accent;
             var underline = Panel("FocusUnderline", button.transform, Color.clear);
             SetRect(underline.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, -5f), new Vector2(size.x - 12f, 3f));
             underline.raycastTarget = false;
             behavior.focusLine = underline.rectTransform;
             behavior.focusGraphic = underline;
+
+            // Outer glow: a sibling Image placed BEFORE the button in render order
+            // (lower sibling index = rendered behind). Sized 24 px larger on each side
+            // so the amber glow spills visibly outside the baked text boundary.
+            // StructureTitleButton.glowImage drives its alpha at runtime.
+            var glow = Panel(name + "Glow", parent, Color.clear);
+            SetRect(glow.rectTransform, Vector2.one * 0.5f, Vector2.one * 0.5f, position, size + new Vector2(24f, 24f));
+            glow.raycastTarget = false;
+            // Move glow to the sibling index just before the button so it renders behind it.
+            glow.transform.SetSiblingIndex(button.transform.GetSiblingIndex());
+            behavior.glowImage = glow;
         }
 
         private static Image Panel(string name, Transform parent, Color color)
