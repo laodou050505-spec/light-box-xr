@@ -1,0 +1,19 @@
+{
+  "task_id": "0c5417a0-0ca2-4dd3-a881-dc5186ccfd51",
+  "status": "success",
+  "type": "text_to_image",
+  "progress": 100,
+  "input": {
+    "prompt": "Blank compact quick-operation guide panel skin for a premium VR spatial cube puzzle, no text, no letters, no numbers, no icons, no logos. Smaller than mission panel but same visual height ratio, narrow dark navy translucent plate, a single cyan header beam, four short left-aligned cyan locator ticks suggesting four instruction rows, tightly cropped right edge with no unused field, restrained warm amber confirmation dot, distinct from mission telemetry frame, flat front orthographic UI texture, protected padding, exact wide rectangle, no perspective, no white background, no mockup.",
+    "model_version": "banana"
+  },
+  "output": {
+    "generated_image_url": "https://tripo-data.rg1.data.tripo3d.com/tcli_c6fae067c9334bd9af3d07029c0e7b00/20260907/0c5417a0-0ca2-4dd3-a881-dc5186ccfd51/generated_image.png?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly90cmlwby1kYXRhLnJnMS5kYXRhLnRyaXBvM2QuY29tL3RjbGlfYzZmYWUwNjdjOTMzNGJkOWFmM2QwNzAyOWMwZTdiMDAvMjAyNjA5MDcvMGM1NDE3YTAtMGNhMi00ZGQzLWE4ODEtZGM1MTg2Y2NmZDUxL2dlbmVyYXRlZF9pbWFnZS5wbmciLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE3ODg4NTY5MzN9fX1dfQ__&Signature=OFLXDPZYxtpnKpef0xX-F9XKd9Kx03PgZeS1azbMtio5olR-PfZhh9SMpquAmkVxkWmiCw2~gURy2i0sqtSM9P4UkEn25aIhalv1rrB3~O5GS7J7YIhVkTqqHqR6lLNDtYF9YF~8kyL-HOYqhm8Pqxd~ayy5jjo-srOAeShluX~sfIzuB2JoshU5yV1IXhmYmYHmd5EfDxzvze9QQBBvghpAkIMyglPWtPsel26nw8DrpfGO2DH6VLbdJWokX96ftJl4V7sn3g1nOijflHU8-q9Ni2nAGZa1PZXFdR1hst2LjSBhPgimpzLAQj9B~CHKUc6A3X4ynYYDJX4bxRLn0A__&Key-Pair-Id=K1676C64NMVM2J"
+  },
+  "created_at": "2026-09-07T08:41:54.964037Z",
+  "completed_at": "2026-09-07T08:42:09.779189Z",
+  "credits_consumed": 5.0,
+  "downloaded_files": [
+    "/Users/ld/Documents/Codex/结构构建/Assets/UI/Generated/NanoBanana20260907/Raw/guide/01_generated_image_url.png"
+  ]
+}

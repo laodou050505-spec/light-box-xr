@@ -1,0 +1,19 @@
+{
+  "task_id": "0727834f-3c4d-43c1-b167-d5f7d078dfea",
+  "status": "success",
+  "type": "text_to_image",
+  "progress": 100,
+  "input": {
+    "prompt": "A premium blank sci-fi holographic title console panel for a spatial projection puzzle game called Lumen Box, absolutely no text, no letters, no numbers, no logos. Symmetrical optical archive architecture, deep black-blue glass, precision cyan luminous circuitry, restrained warm amber calibration accents, a central abstract floating cube formed by two intersecting projection planes, generous protected empty center field for title typography, two clearly separated horizontal empty button bays in lower half, elegant corner brackets, high-end industrial UI, sharp clean edges, front orthographic flat rectangular UI texture, all details kept inside 8 percent safe margins, black transparent-looking background to image edges, no white background, no perspective distortion, no phone UI, no mockup.",
+    "model_version": "banana"
+  },
+  "output": {
+    "generated_image_url": "https://tripo-data.rg1.data.tripo3d.com/tcli_c6fae067c9334bd9af3d07029c0e7b00/20260907/0727834f-3c4d-43c1-b167-d5f7d078dfea/generated_image.png?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly90cmlwby1kYXRhLnJnMS5kYXRhLnRyaXBvM2QuY29tL3RjbGlfYzZmYWUwNjdjOTMzNGJkOWFmM2QwNzAyOWMwZTdiMDAvMjAyNjA5MDcvMDcyNzgzNGYtM2M0ZC00M2MxLWIxNjctZDVmN2QwNzhkZmVhL2dlbmVyYXRlZF9pbWFnZS5wbmciLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE3ODg4NTcwNDd9fX1dfQ__&Signature=n3J8NuWqpXfDFE34kSxKBwhH5Xs3tbuhYL2BOpqf1cFCr9FwYdzvATqPaPG19vdg-lBsKFay4sIC9ong6IFr-Jo~PLOqdicvCLZqhOFvx1fZ~BoVjlD0SWFVlAMY9dl0VVdsQzlX3JcRPURbnTsJKex29~lYwbTiUyZaAmtb-hXI9G7ToKIZ099o0~37iS3GoHYdforSpST7W~QUSBOfE8gyy0KF2ucti5KZWtj9-C2iOKo6VHvpAPYcyJPnbR6aBy~rEVygMg1P0jneaahRlESUn~gVMq6o3w13k7uZ-R-aoiKZgUPZdUi5QgIBu~hKV7LDwCnoUiG1M5QBQ4DiMQ__&Key-Pair-Id=K1676C64NMVM2J"
+  },
+  "created_at": "2026-09-07T08:43:48.855276Z",
+  "completed_at": "2026-09-07T08:44:05.329799Z",
+  "credits_consumed": 5.0,
+  "downloaded_files": [
+    "/Users/ld/Documents/Codex/结构构建/Assets/UI/Generated/NanoBanana20260907/Raw/title/01_generated_image_url.png"
+  ]
+}

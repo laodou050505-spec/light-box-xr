@@ -1,0 +1,19 @@
+{
+  "task_id": "9750978b-c2cb-41c4-b4b8-e2471b0bc0ce",
+  "status": "success",
+  "type": "image_to_image",
+  "progress": 100,
+  "input": {
+    "prompt": "Refine this finished game title screen, preserving the entire left half exactly: beautiful LUMEN BOX lettering, subtitle, START and EXIT labels and the precise positions and shapes of both buttons. Keep the midnight blue and amber palette and silver optical arch on the right. CRITICAL CORRECTION ON RIGHT: replace both human bust silhouette images with luminous amber SQUARE CELL geometric silhouettes. Absolutely no people, faces, busts or organic silhouettes anywhere. Each upright dark board is an optical projection display with a small subtle 3 by 3 square grid. Light only six cells in a staircase arrangement: bottom row three lit squares, middle row two lit squares, top row one lit square. Every lit square has a thin dark gap separating it from its neighbors. Replace the floating diagonal cubes with SIX perfectly cubic amber glass blocks in one supported staircase: three cubes sit side by side on the floor, two cubes rest directly above the left two lower cubes, one cube rests directly above the leftmost middle cube. All cubes touch a supporting cube or the ground, never floating, no long rectangular prisms. Both boards visibly show blocky square-cell projections, NOT shadows of people. Keep right composition elegant and airy, the cube structure visibly contained inside the sculptural silver arch. Dim the brightest overhead white ceiling slightly to preserve the title as primary focus. No new text or labels. Preserve title screen framing and exact button alignment.",
+    "model_version": "banana_pro"
+  },
+  "output": {
+    "generated_image_url": "https://tripo-data.rg1.data.tripo3d.com/tcli_c6fae067c9334bd9af3d07029c0e7b00/20260908/9750978b-c2cb-41c4-b4b8-e2471b0bc0ce/generated_image.png?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly90cmlwby1kYXRhLnJnMS5kYXRhLnRyaXBvM2QuY29tL3RjbGlfYzZmYWUwNjdjOTMzNGJkOWFmM2QwNzAyOWMwZTdiMDAvMjAyNjA5MDgvOTc1MDk3OGItYzJjYi00MWM0LWI0YjgtZTI0NzFiMGJjMGNlL2dlbmVyYXRlZF9pbWFnZS5wbmciLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE3ODg5MzM4NTd9fX1dfQ__&Signature=X0ZFiSOWYc483sOraOy4clLRnVypU15DGyGhBhDrMc9rJp46eW6hId7uObuhNn-iUKi77wMtQRg7k8jXHsuDBzLtxvAxIQ1CpVPKClbEpBRfd~uVncHXDMDqGbQlYEetSMseoo1PUSte2c9VuxFJ4IXJEON0cWvwH07XtipenM7FjdVK7lcUOq1lfsoUE9J0Hz8BeW8fTlQlw8~x3OgfLkSXGzV1RS~V9DzXKuJoJj3Fy~TNcCQjrlk3BG4~ahwP9qCqUUAD~iAMTPhWSVXMkyjmAdWWh~KH8Z-147OFXbBQKFc1zweeMF55MRURACjjOaoCiSGWXeYqBYGFxkzGsw__&Key-Pair-Id=K1676C64NMVM2J"
+  },
+  "created_at": "2026-09-08T06:03:29.460562Z",
+  "completed_at": "2026-09-08T06:04:14.202054Z",
+  "credits_consumed": 15.0,
+  "downloaded_files": [
+    "/Users/ld/Documents/Codex/结构构建/Assets/UI/Generated/NanoBanana20260908/OpticalArchiveFinal/01_generated_image_url.png"
+  ]
+}

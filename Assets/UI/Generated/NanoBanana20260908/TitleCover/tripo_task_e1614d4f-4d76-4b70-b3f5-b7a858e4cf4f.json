@@ -1,0 +1,19 @@
+{
+  "task_id": "e1614d4f-4d76-4b70-b3f5-b7a858e4cf4f",
+  "status": "success",
+  "type": "image_to_image",
+  "progress": 100,
+  "input": {
+    "prompt": "Create a premium 4:3 game title screen for an original spatial puzzle game called LUMEN BOX. Use the reference image only as a visual direction: deep emerald-black nebula, CRT scanline texture, subtle vignette, red-orange warning accents, cyan technical marks, restrained glitch, cinematic high-end sci-fi UI. Design a clear central title lockup with crisp legible English typography reading LUMEN BOX, a small subtitle reading SPATIAL PROJECTION PUZZLE, and three elegant empty horizontal menu button slots along the lower third with enough negative space for Unity to place interactive text. Include a luminous geometric cube/prism symbol behind the title, tiny corner telemetry marks, balanced margins, no characters, no weapons, no logos, no Chinese, no watermark, no white background, no stretched elements.",
+    "model_version": "banana"
+  },
+  "output": {
+    "generated_image_url": "https://tripo-data.rg1.data.tripo3d.com/tcli_c6fae067c9334bd9af3d07029c0e7b00/20260908/e1614d4f-4d76-4b70-b3f5-b7a858e4cf4f/generated_image.png?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly90cmlwby1kYXRhLnJnMS5kYXRhLnRyaXBvM2QuY29tL3RjbGlfYzZmYWUwNjdjOTMzNGJkOWFmM2QwNzAyOWMwZTdiMDAvMjAyNjA5MDgvZTE2MTRkNGYtNGQ3Ni00YjcwLWIzZjUtYjdhODU4ZTRjZjRmL2dlbmVyYXRlZF9pbWFnZS5wbmciLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE3ODg5MzE3NDB9fX1dfQ__&Signature=aaIadSfrEtAyv5FJYz9OO8rPAjPBuTq-SEK5Vj1WZYjKWe-tLf6jDmArMzIVzVp6sVDCilhdG-8reER8q1aZp8UtsnB2QmVnBhgEAiicIpbUFu02FOBxe4wxDsKnQdDO6U9ocK-z6XG7PpPlBoP~rKnkBgRnC-Yk4vJuxvBd8FC2-BI4z6gei4EUR5AuzsBPo0dKSpka9l3jaKSUUYeoShb8dzYosdP0YWnsZb9ojGh7y4Znt1bQpkDazV1Hjfzr4OqRPckpb1oPAze85yVfERfxOjziXt86iNqZSNil3h~ReYFInVQiWbMlAkjQwmAcRLR8GVvknGiM8VkDIwkjLw__&Key-Pair-Id=K1676C64NMVM2J"
+  },
+  "created_at": "2026-09-08T05:28:39.284747Z",
+  "completed_at": "2026-09-08T05:28:58.550084Z",
+  "credits_consumed": 5.0,
+  "downloaded_files": [
+    "/Users/ld/Documents/Codex/结构构建/Assets/UI/Generated/NanoBanana20260908/TitleCover/01_generated_image_url.png"
+  ]
+}

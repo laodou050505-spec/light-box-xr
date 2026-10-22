@@ -1,0 +1,19 @@
+{
+  "task_id": "c050976f-0b73-4473-a686-b78221a0b8c7",
+  "status": "success",
+  "type": "text_to_image",
+  "progress": 100,
+  "input": {
+    "prompt": "A premium blank sci-fi holographic title console panel for a spatial projection puzzle game named Lumen Box, no text, no letters, no numbers, no logos. Symmetrical optical archive architecture, deep black-blue glass, precision cyan luminous circuitry, restrained warm amber calibration accents, a central abstract floating cube formed by two intersecting projection planes, generous protected empty center area for title typography, two clearly separated horizontal empty button bays in lower half, elegant corner brackets, subtle depth and parallax, high-end industrial UI, sharp clean edges, cinematic but lightweight, orthographic front view, flat rectangular UI texture, exact ultra-wide composition, all important details kept 7 percent away from edges, no perspective distortion, no rounded mobile cards, no mockup, no background outside panel.",
+    "model_version": "banana"
+  },
+  "output": {
+    "generated_image_url": "https://tripo-data.rg1.data.tripo3d.com/tcli_c6fae067c9334bd9af3d07029c0e7b00/20260907/c050976f-0b73-4473-a686-b78221a0b8c7/generated_image.png?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly90cmlwby1kYXRhLnJnMS5kYXRhLnRyaXBvM2QuY29tL3RjbGlfYzZmYWUwNjdjOTMzNGJkOWFmM2QwNzAyOWMwZTdiMDAvMjAyNjA5MDcvYzA1MDk3NmYtMGI3My00NDczLWE2ODYtYjc4MjIxYTBiOGM3L2dlbmVyYXRlZF9pbWFnZS5wbmciLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE3ODg4NTY3MDd9fX1dfQ__&Signature=caYqsfBa8Qx70HGtt-bakXd5aCOOc~xGtq2qBCZ9mEiHqDHWnLYUeDT6fnecRFvd~WZFsXiR~zQHZ09LJbskNc7lKdP4D~ThoD3RbITJJwzd8f4LgXe0ud8dAd0JqZPZaBceFNI7FZyCdDJKB66JF5mMjG2R83rHpJK4xRy4Vwj-OKeVgyrqBGClW5pmsAutTz5VzgH1n1rIKvBFa8sqOl1isgV0O5nOk6wwMJqRXdk7QsIQu37uBX6o0lm5YaTtG7MJ1OGiwkhGEXjwsUbTT0ltOiZ9fgHKAQumxAkn9DyommsE~TDLJcHpWGbcXTSMlRidEGX5V~QgjT9V9kuv8A__&Key-Pair-Id=K1676C64NMVM2J"
+  },
+  "created_at": "2026-09-07T08:38:09.421362Z",
+  "completed_at": "2026-09-07T08:38:25.956414Z",
+  "credits_consumed": 5.0,
+  "downloaded_files": [
+    "/Users/ld/Documents/Codex/结构构建/Assets/UI/Generated/NanoBanana20260907/Raw/01_generated_image_url.png"
+  ]
+}

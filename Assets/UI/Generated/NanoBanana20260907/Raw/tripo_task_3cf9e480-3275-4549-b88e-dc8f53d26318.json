@@ -1,0 +1,19 @@
+{
+  "task_id": "3cf9e480-3275-4549-b88e-dc8f53d26318",
+  "status": "success",
+  "type": "text_to_image",
+  "progress": 100,
+  "input": {
+    "prompt": "Blank premium holographic tutorial panel skin for a VR spatial cube projection puzzle, no text, no letters, no numbers, no icons, no logos. Deep navy translucent optical glass, asymmetrical cyan circuit frame with a small amber calibration rail, a large calm reading field in the upper and middle area, one distinct centered button socket at the bottom, precision archive instrument aesthetic, flat front orthographic UI texture, exact ultra-wide rectangular composition, protected inner padding 8 percent, every frame line stays inside edges, no white background, no perspective, no phone UI, no mockup.",
+    "model_version": "banana"
+  },
+  "output": {
+    "generated_image_url": "https://tripo-data.rg1.data.tripo3d.com/tcli_c6fae067c9334bd9af3d07029c0e7b00/20260907/3cf9e480-3275-4549-b88e-dc8f53d26318/generated_image.png?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly90cmlwby1kYXRhLnJnMS5kYXRhLnRyaXBvM2QuY29tL3RjbGlfYzZmYWUwNjdjOTMzNGJkOWFmM2QwNzAyOWMwZTdiMDAvMjAyNjA5MDcvM2NmOWU0ODAtMzI3NS00NTQ5LWI4OGUtZGM4ZjUzZDI2MzE4L2dlbmVyYXRlZF9pbWFnZS5wbmciLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE3ODg4NTY4NzR9fX1dfQ__&Signature=nLR1u5lD6OhmTuvKAvW8Kv-PE1rN2RW5diisvH~VF2NRvPNZrZOIGUACj6cMmO1DV3AwDL~BOUV~AxAnKpQUxDzUDOGjH-lh752Ct5EA7uNhlVQ9nlT-LHwAfzTd4TuOn-pmQCtt5f7zJINXFNHT1QjVA2aNn4ByMSocNBvhhoPmZW3CTsIQQ5dYY9bIJXkL~o8wXsVhtp7vrutswudGUy2TZ8cDGK2ihRyoqFWvYSCUtG7j0fR9InXy6gcyMLx343wz7Vs9q4FPZYwLfooIa~Yfg3RxGM5dEPDLvTs0wmu-oWQsc2DASCPW42IPW6ujMI-n4pIfwYgpbXUsWnmsAw__&Key-Pair-Id=K1676C64NMVM2J"
+  },
+  "created_at": "2026-09-07T08:40:57.068047Z",
+  "completed_at": "2026-09-07T08:41:13.214122Z",
+  "credits_consumed": 5.0,
+  "downloaded_files": [
+    "/Users/ld/Documents/Codex/结构构建/Assets/UI/Generated/NanoBanana20260907/Raw/01_generated_image_url.png"
+  ]
+}

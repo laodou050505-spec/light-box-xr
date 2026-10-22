@@ -1,0 +1,19 @@
+{
+  "task_id": "01114027-881c-465f-9ff2-7f893cb1c203",
+  "status": "success",
+  "type": "image_to_image",
+  "progress": 100,
+  "input": {
+    "prompt": "Design a production-ready blank game HUD mission readout background texture. Reference the attached LUMEN BOX cover ONLY for its midnight navy, porcelain silver metal and amber optical glass material language. Replace the entire cover composition with ONE completely front-facing flat rectangular panel, edge-to-edge, no perspective and no surroundings. No words, letters, numbers, icons, buttons, input slots, text placeholders, horizontal rules through the content, grids, holograms or cyan neon. The interior must be a calm near-uniform very dark midnight blue matte field, at least 84 percent empty, specifically intended for large readable live Chinese text. Keep every ornament outside a generous 7 percent inner safe margin. Use an extremely thin porcelain-silver double rim confined to the outermost edge, with subtly stepped optical-instrument corners. Add one very small translucent amber glass calibration insert only in the top-right edge, maximum 6 percent of the width. Quiet premium optical archive aesthetic, immaculate, restrained, opaque, no transparent holes. Wide landscape 16:9 mission/status panel. Do not make decorative lines cross the central content area.",
+    "model_version": "banana_pro"
+  },
+  "output": {
+    "generated_image_url": "https://tripo-data.rg1.data.tripo3d.com/tcli_c6fae067c9334bd9af3d07029c0e7b00/20260908/01114027-881c-465f-9ff2-7f893cb1c203/generated_image.png?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly90cmlwby1kYXRhLnJnMS5kYXRhLnRyaXBvM2QuY29tL3RjbGlfYzZmYWUwNjdjOTMzNGJkOWFmM2QwNzAyOWMwZTdiMDAvMjAyNjA5MDgvMDExMTQwMjctODgxYy00NjVmLTlmZjItN2Y4OTNjYjFjMjAzL2dlbmVyYXRlZF9pbWFnZS5wbmciLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE3ODg5NDUwOTR9fX1dfQ__&Signature=NkK1aUOczNfmKFQu3sCF9AUehQmGKeFn4LRjG2BVDgFx0xvbhysNlgWIcXeXK9rhiKVA0pcgdbl1G~wo2L89UYH4pLM6yJ5XfOAEV~Gvh2CqneyirbqeIy7VoJu4TfLP84L8J4bpNmAhs1lotk8FvHG13Ohws1hwJjLNFVTyTE2vpmNsK4wQDo5To-owrfGUZqUHthgbb1g7VoeEg4-y~D~jaXcFtTFEukijtuQkX76tAn-KSEyLMGoVl3S1C7wLmGNx7glbKObeI3SgbUlKsYGjqnS4QX0vx-eWOYv~cDCdzHXgmMYhLIEROtCCy97MPnD0F38UQCynA5Vy6e0uWw__&Key-Pair-Id=K1676C64NMVM2J"
+  },
+  "created_at": "2026-09-08T09:10:48.789756Z",
+  "completed_at": "2026-09-08T09:11:33.575201Z",
+  "credits_consumed": 15.0,
+  "downloaded_files": [
+    "/Users/ld/Documents/Codex/结构构建/Assets/UI/Generated/OpticalPanels20260908/Readout/01_generated_image_url.png"
+  ]
+}

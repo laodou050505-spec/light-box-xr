@@ -1,0 +1,19 @@
+{
+  "task_id": "e05adbb2-d817-495e-b2b6-65d4bc27d3c3",
+  "status": "success",
+  "type": "text_to_image",
+  "progress": 100,
+  "input": {
+    "prompt": "Finished premium 16:9 title screen for LUMEN BOX, an original spatial projection puzzle. Monumental optical archive: midnight indigo, porcelain silver, luminous amber. Cinematic asymmetrical composition. LEFT 44%: huge custom architectural ivory display lettering LUMEN on line one, BOX below, precision slit cuts and restrained bevels, exact readable spelling, beautiful bespoke typography. Small subtitle SPATIAL PROJECTION PUZZLE below. Lower left at y=76%: refined long amber button labeled START in dark designed lettering, spanning x=8..35%. Below at y=86%: smaller subtle outlined button labeled EXIT in ivory, x=8..23%. Exactly two labeled buttons. RIGHT 56%: a tall monumental silver optical aperture gate framing five amber glass cubes stacked as a supported staircase. Two perpendicular dark ceramic planes carry flat illuminated front and side silhouettes. The aperture is the principal architectural form, tall and sculptural; cubes are the jewel inside. Beautiful machined metal and glass, sophisticated industrial product photography, dramatic overhead white light, warm refraction on the dark floor. Rich midnight blue ground with spacious quiet left text region. Full bleed art, no outer card frame, all text within 8% safe margins. Only text: LUMEN BOX, SPATIAL PROJECTION PUZZLE, START, EXIT. No extra labels, gibberish, humans, weapons, planets, nebulas, HUD clutter, watermark or logos. Production-ready key art with integrated graphic-designed lettering, flat front-facing screen.",
+    "model_version": "banana_pro"
+  },
+  "output": {
+    "generated_image_url": "https://tripo-data.rg1.data.tripo3d.com/tcli_c6fae067c9334bd9af3d07029c0e7b00/20260908/e05adbb2-d817-495e-b2b6-65d4bc27d3c3/generated_image.png?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly90cmlwby1kYXRhLnJnMS5kYXRhLnRyaXBvM2QuY29tL3RjbGlfYzZmYWUwNjdjOTMzNGJkOWFmM2QwNzAyOWMwZTdiMDAvMjAyNjA5MDgvZTA1YWRiYjItZDgxNy00OTVlLWIyYjYtNjVkNGJjMjdkM2MzL2dlbmVyYXRlZF9pbWFnZS5wbmciLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE3ODg5MzM3NDd9fX1dfQ__&Signature=kTDgJx~mSq-9Pwi2f83Ibt~0U4qnsxcT-amGSznS68-mB10~2DP~By4B-Hu~yCzjUPoSm8-nxpqnhwJaH-vDkVOj7p53aE6ga5ciUWEtXnWY5xLlRYktsGk8zSZO-UWk74TkQxwJo4K6tGhCrjVkBnhSjUGDJC0QKtMA87HSFcUbj1hwOgLvJ7sqRloQtxaqsovvx0AOHD2oT0ghnUd-R0QwYn0GaeKapyDfSVucPdYI-EUxe~8Anlm5-TN61g-eOp0jA~d-ytJbMiQvvtXa74w~Y6HK5QmOO8je~cLf2zc~uvbo25NNEKvKU5hzoJST-AtM-hXh~BXUYvUZBVPyuw__&Key-Pair-Id=K1676C64NMVM2J"
+  },
+  "created_at": "2026-09-08T06:01:55.311585Z",
+  "completed_at": "2026-09-08T06:02:23.765833Z",
+  "credits_consumed": 15.0,
+  "downloaded_files": [
+    "/Users/ld/Documents/Codex/结构构建/Assets/UI/Generated/NanoBanana20260908/OpticalArchive/01_generated_image_url.png"
+  ]
+}
