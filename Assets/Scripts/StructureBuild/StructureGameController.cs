@@ -218,7 +218,7 @@ namespace StructureBuild
             if (!IsGameplayInputAllowed || dragging || levelCompleted || level == null) return false;
             if (occupied.Count >= level.cubeLimit)
             {
-                SetStatus("Block budget reached, move or undo first");
+                SetStatus("Block limit reached. Move or undo a block first.");
                 return false;
             }
 
@@ -319,7 +319,7 @@ namespace StructureBuild
                 SpawnCube(origin.Value);
             }
             EvaluateAndDisplay();
-            SetStatus("No valid drop target, block returned");
+            SetStatus("No valid cell. Block returned.");
             audio?.PlayReject();
             return false;
         }

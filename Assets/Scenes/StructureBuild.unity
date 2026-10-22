@@ -16302,7 +16302,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "LUMEN BOX - Tutorial"
+  m_text: "LUMEN BOX — Tutorial"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: aa3bbbfa4bd646948ccaf7027781902d, type: 2}
   m_sharedMaterial: {fileID: -6956098937724471863, guid: aa3bbbfa4bd646948ccaf7027781902d, type: 2}
@@ -23169,7 +23169,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "LUMEN BOX - Tutorial"
+  m_text: "LUMEN BOX — Tutorial"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: aa3bbbfa4bd646948ccaf7027781902d, type: 2}
   m_sharedMaterial: {fileID: -6956098937724471863, guid: aa3bbbfa4bd646948ccaf7027781902d, type: 2}

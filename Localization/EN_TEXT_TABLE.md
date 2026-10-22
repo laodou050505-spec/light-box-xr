@@ -28,12 +28,12 @@
 | status.complete | 正面与侧面投影已吻合 · 结构完成 | Front & side projections matched · Structure complete | StructureGameController.cs:378,385 | 结构完成时的状态文本 | 已翻译 |
 | status.progress | 正面 {f.matched}/{f.targetCount} · 侧面 {s.matched}/{s.targetCount} | Front {f.matched}/{f.targetCount} · Side {s.matched}/{s.targetCount} | StructureGameController.cs:379,386 | 投影进度状态 | 已翻译 |
 | status.hint_placed | 提示: 已放置 {x},{y},{z} | Hint: placed {x},{y},{z} | StructureGameController.cs:209 | 提示按钮放置后状态 | 已翻译 |
-| status.budget_full | 结构单元已用完，请先移动或撤回方块 | Block budget reached, move or undo first | StructureGameController.cs:221 | 方块预算耗尽时提示 | 已翻译（em dash→逗号，避免字体缺字）|
+| status.budget_full | 结构单元已用完，请先移动或撤回方块 | Block limit reached. Move or undo a block first. | StructureGameController.cs:221 | 方块预算耗尽时提示 | 已翻译 |
 | status.remove_above | 请先移走上方方块 | Remove the block above first | StructureGameController.cs:248 | 拖取被压住的方块时提示 | 已翻译 |
 | status.drag_started | 拖动方块到高亮落点 | Drag block to a highlighted cell | StructureGameController.cs:258 | 开始拖动时状态 | 已翻译 |
 | status.drag_valid | 释放以放置 {x},{y},{z} | Release to place at {x},{y},{z} | StructureGameController.cs:291 | 拖动悬停在有效落点时 | 已翻译 |
 | status.drag_invalid | 将方块移动到棋盘高亮区域 | Move block over a highlighted grid cell | StructureGameController.cs:291 | 拖动悬停在无效区域时 | 已翻译 |
-| status.no_drop | 未命中合法落点，方块已返回 | No valid drop target, block returned | StructureGameController.cs:322 | 释放时没有落点 | 已翻译（em dash→逗号，避免字体缺字）|
+| status.no_drop | 未命中合法落点，方块已返回 | No valid cell. Block returned. | StructureGameController.cs:322 | 释放时没有落点 | 已翻译 |
 | status.drag_cancel | 已取消拖动 | Drag cancelled | StructureGameController.cs:338 | 取消拖动时 | 已翻译 |
 | label.level | 档案 {n:00} / {total} · {name} | Archive {n:00} / {total} · {name} | StructureGameController.cs:143 | 关卡标题标签 | 已翻译 |
 | label.cubes | 方块 {count} / {limit} | Blocks {count} / {limit} | StructureGameController.cs:374 | 方块计数标签 | 已翻译 |
@@ -58,7 +58,7 @@
 | btn.start_practice | 开始练习 | Start Practice | StructureBuildOpticalPanels.cs:192 | 教学开始练习按钮 | 已翻译 |
 | panel.guide_title | 操作提示 | Controls | StructureBuildOpticalPanels.cs:156 | 右侧操作提示面板标题 | 已翻译 |
 | panel.guide_body | 1 按扳机抓取左侧方块\n2 拖到橙色格，松开后吸附\n3 让两面投影都变成青绿色\n\n完成后点击下一关 | 1  Pull trigger to grab a block from the left\n2  Drag to an orange cell; release to snap\n3  Turn both projections teal\n\nTap Next when done | StructureBuildOpticalPanels.cs:159 | 右侧操作提示面板正文 | 已翻译 |
-| teaching.title | 光匣教学关 | LUMEN BOX - Tutorial | StructureBuildOpticalPanels.cs:184 | 教学卡标题 | 已翻译（em dash→连字符，避免字体缺字）|
+| teaching.title | 光匣教学关 | LUMEN BOX — Tutorial | StructureBuildOpticalPanels.cs:184 | 教学卡标题 | 已翻译（em dash，Arimo 字体已含此字符）|
 | teaching.body | 教学关只需 2 块地面方块\n\n1 指向左侧方块源，按扳机抓取\n2 拖到橙色高亮格，松开后自动吸附\n3 让正面与侧面投影都变成青绿色 | The tutorial requires only 2 ground blocks.\n\n1  Aim at the block source on the left; pull trigger to grab\n2  Drag to an orange highlighted cell; release to snap\n3  Turn both the front and side projections teal | StructureBuildOpticalPanels.cs:187 | 教学卡正文 | 已翻译 |
 | teaching.note | 完成后点击下一关，继续后面的档案 | Tap Next when done to continue through the archives | StructureBuildOpticalPanels.cs:191 | 教学卡附注 | 已翻译 |
 | generator.level_label | 结构档案 01 / 12  ·  首次校准 | Archive 01 / 12  ·  First Calibration | StructureBuildOpticalPanels.cs:101 | 生成器默认文本 | 已翻译 |
@@ -79,10 +79,10 @@
 | archive-005 | 三峰棱镜 | Three-Peak Prism | 辨认三层塔与双层塔的对应 | Map the three-tier tower against the two-tier tower |
 | archive-006 | 双塔回声 | Twin Tower Echo | 两座三层塔需要正确换位 | Two three-tier towers must swap positions correctly |
 | archive-007 | 终端光门 | Terminal Gate | 完成双塔组合，进入深层档案 | Complete the twin-tower pair to unlock the deep archive |
-| archive-008 | 折光回廊 | Refraction Hall | 让三座双层塔在侧影中共用深度 | Three two-tier towers must share depth in the side silhouette |
-| archive-009 | 双核偏振 | Dual-Core Shift | 同一正面高塔必须在深处留下第二核心 | A single front-facing tower must leave a second core deeper in |
+| archive-008 | 折光回廊 | Refraction Corridor | 让三座双层塔在侧影中共用深度 | Three two-tier towers must share depth in the side silhouette |
+| archive-009 | 双核偏振 | Dual-Core Polarization | 同一正面高塔必须在深处留下第二核心 | One tall tower in the front view must hide a second core further back |
 | archive-010 | 暗面列阵 | Dark Side Array | 把三座高塔藏进同一条侧面光柱 | Hide three tall towers within a single side-projection column |
-| archive-011 | 四壁共振 | Four-Wall Resonance | 用一座主塔同时遮住三面深层回声 | Use one master tower to block three layers of deep echoes |
+| archive-011 | 四壁共振 | Four-Wall Resonance | 用一座主塔同时遮住三面深层回声 | Use one main tower to mask three deep echoes at once |
 | archive-012 | 终极光栅 | Final Grating | 让四座满高光塔在侧面压缩成一条主脊 | Compress four full-height towers into a single ridge in the side view |
 
 ---
