@@ -101,8 +101,9 @@ namespace StructureBuild.Editor
             var content = Content(panel.transform, 900, 506, scale);
             var title = Text("Level", content, "Archive 01 / 12  ·  First Calibration", 42, Paper, 68, 54, 744, 58, true);
             Fit(title, 35, 42, false);
-            TextMeshProUGUI rule = Text("Rule", content, "Place two ground blocks to illuminate both projections at once", 38, Muted, 68, 134, 744, 100);
+            TextMeshProUGUI rule = Text("Rule", content, "Place two ground blocks to light both projections", 38, Muted, 68, 134, 744, 112);
             Fit(rule, 35, 42, true);
+            rule.margin = new Vector4(8, 0, 8, 0);
             Line(content, 68, 256, 744);
             var status = Text("Status", content, "Front 0/2 · Side 0/2", 42, Amber, 68, 288, 744, 70, true);
             Fit(status, 35, 42, true);
@@ -159,10 +160,11 @@ namespace StructureBuild.Editor
             Text("Title", content, "Controls", 38, Paper, 58, 48, 560, 54, true);
             Line(content, 58, 120, 560);
             var body = Text("Body", content,
-                "1  Pull trigger to grab a block from the left\n2  Drag to an orange cell; release to snap\n3  Turn both projections teal\n\nTap Next when done",
-                38, Muted, 58, 148, 560, 350);
+                "1  Pull trigger to grab a block\n2  Drag to an orange cell, release to snap\n3  Make both projections teal\n\nTap Next when done",
+                38, Muted, 58, 148, 600, 350);
             body.lineSpacing = 4;
             Fit(body, 35, 42, true);
+            body.margin = new Vector4(8, 0, 8, 0);
         }
 
         private static void BuildTeaching(bool xr)
@@ -191,7 +193,7 @@ namespace StructureBuild.Editor
                 32, Muted, 84, 200, 912, 272);
             body.lineSpacing = 10;
             Fit(body, 27, 32, true);
-            Text("NextArchiveNote", content, "Tap Next when done to continue through the archives", 32, Muted, 84, 496, 912, 42);
+            Text("TutorialNote", content, "Tap Next when done to continue.", 32, Muted, 84, 496, 912, 42);
             Button(content, "Start Practice", StructureUIButtonAction.DismissInstructions, 84, 570, 360, 88, xr, true);
         }
 

@@ -416,7 +416,7 @@ namespace StructureBuild.Editor
             float dockBtnCapH = 35 * dockScale * capJost;
             // GuidePanel: Controls body 38pt Jost（Fit 35-42）
             float guideBodyCapH = 38 * missionScale * capJost;
-            // Tutorial/Archive card: Title 52pt Jost, Body ~32pt Jost, NextNote 32pt Jost
+            // Tutorial/Archive card: Title 52pt Jost, Body ~32pt Jost, TutorialNote 32pt Jost
             float cardTitleCapH  = 52 * cardScale * capJost;
             float cardBodyCapH   = 32 * cardScale * capJost;
             float cardNoteCapH   = 32 * cardScale * capJost;
@@ -443,7 +443,7 @@ namespace StructureBuild.Editor
             sb.AppendLine($"  [GuidePanel]     Controls body  Jost 38pt × 0.00145 → {guideBodyCapH*1000:F1}mm  {pass(guideBodyCapH, reqBodySide)}");
             sb.AppendLine($"  [TutorialCard]   Title          Jost 52pt × 0.00130 → {cardTitleCapH*1000:F1}mm  {pass(cardTitleCapH, reqTitleCard)}");
             sb.AppendLine($"  [TutorialCard]   Body           Jost 32pt × 0.00130 → {cardBodyCapH*1000:F1}mm  {pass(cardBodyCapH, reqBodyCard)}");
-            sb.AppendLine($"  [TutorialCard]   NextNote       Jost 32pt × 0.00130 → {cardNoteCapH*1000:F1}mm  {pass(cardNoteCapH, reqBodyCard)}");
+            sb.AppendLine($"  [TutorialCard]   TutorialNote   Jost 32pt × 0.00130 → {cardNoteCapH*1000:F1}mm  {pass(cardNoteCapH, reqBodyCard)}");
             sb.AppendLine("────────────────────────────────────────────────────────────────────");
             Debug.Log(sb.ToString());
 
@@ -502,7 +502,18 @@ namespace StructureBuild.Editor
                 {
                     case ButtonVisualState.Hover:
                         if (btn.graphic != null)
-                            btn.graphic.color = btn.highlightedColor; // teal (0.20, 0.92, 0.88)
+                        {
+                            // +25% 亮度，上限 1（使背景明显变亮）
+                            var hc = btn.highlightedColor;
+                            btn.graphic.color = new Color(Mathf.Min(hc.r * 1.25f, 1f), Mathf.Min(hc.g * 1.25f, 1f), Mathf.Min(hc.b * 1.25f, 1f), hc.a);
+                            // 删除旧 Outline，重新添加琥珀色外发光
+                            foreach (var old in btn.graphic.GetComponents<UnityEngine.UI.Outline>())
+                                UnityEngine.Object.DestroyImmediate(old);
+                            var outline = btn.graphic.gameObject.AddComponent<UnityEngine.UI.Outline>();
+                            outline.effectColor = new Color(1f, 0.75f, 0.34f, 1f); // 琥珀
+                            outline.effectDistance = new Vector2(8f, -8f);
+                            EditorUtility.SetDirty(outline);
+                        }
                         if (btn.focusGraphic != null)
                             btn.focusGraphic.color = btn.focusColor;  // amber glow
                         if (btn.focusLine != null)
@@ -540,7 +551,13 @@ namespace StructureBuild.Editor
                 var baseScale = btn.transform.localScale;
                 if (Mathf.Abs(baseScale.x - 1.05f) < 0.01f || Mathf.Abs(baseScale.x - 0.97f) < 0.01f)
                     baseScale = Vector3.one;
-                if (btn.graphic != null) btn.graphic.color = btn.normalColor;
+                if (btn.graphic != null)
+                {
+                    btn.graphic.color = btn.normalColor;
+                    // 移除截图时临时添加的 Outline 发光组件，避免污染保存的场景
+                    foreach (var old in btn.graphic.GetComponents<UnityEngine.UI.Outline>())
+                        UnityEngine.Object.DestroyImmediate(old);
+                }
                 if (btn.focusGraphic != null) btn.focusGraphic.color = Color.clear;
                 if (btn.focusLine != null) btn.focusLine.localScale = new Vector3(0.16f, 1f, 1f);
                 btn.transform.localScale = baseScale;
