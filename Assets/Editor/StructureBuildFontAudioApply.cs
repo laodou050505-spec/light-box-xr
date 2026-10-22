@@ -136,10 +136,21 @@ namespace StructureBuild.Editor
                 var tmpInTitle = UnityEngine.Object.FindObjectsByType<TextMeshProUGUI>(FindObjectsInactive.Include);
                 Debug.Log($"[FontAudioApply] Title scene TMP count: {tmpInTitle.Length}");
 
-                // 封面截图（START hover 态 → 编辑器模式下直接截当前状态）
+                // 封面截图：手动把视觉状态设到 hover/press 再渲染
                 var titleCam = FindEditModeCamera();
                 if (titleCam != null)
+                {
+                    ApplyTitleButtonState(StructureTitleButtonAction.Start, ButtonVisualState.Hover);
+                    Canvas.ForceUpdateCanvases();
                     Shoot(titleCam, "00_cover_start_hover_EN.png");
+
+                    ApplyTitleButtonState(StructureTitleButtonAction.Start, ButtonVisualState.Press);
+                    Canvas.ForceUpdateCanvases();
+                    Shoot(titleCam, "00b_cover_start_press_EN.png");
+
+                    ResetTitleButtonStates();
+                    Canvas.ForceUpdateCanvases();
+                }
 
                 EditorSceneManager.SaveScene(titleScene);
                 Debug.Log("[FontAudioApply] Title scene saved.");
@@ -371,55 +382,76 @@ namespace StructureBuild.Editor
         // 规范 C: body cap-height ≥ d×0.017, secondary ≥ d×0.012, title ≥ d×0.028
         // 世界空间 cap-height = fontSize_pt × canvas_m_per_unit × cap_height_ratio
         // Jost cap_height_ratio ≈ 0.72; Cinzel ≈ 0.68
+        //
+        // 真实视距计算（PicoHeadLockedCanvas 位置 = eye + fwd*dist + right*vx + up*vy）：
+        //   距离 = sqrt(dist^2 + vx^2 + vy^2)（与相机朝向无关，仅依赖偏移量大小）
+        //   MissionReadout: sqrt(1.70^2 + 0.62^2 + 0.94^2) = 2.039m
+        //   ActionDock:     sqrt(1.70^2 + 0.00^2 + 1.13^2) = 2.041m
+        //   GuidePanel:     sqrt(1.70^2 + 0.62^2 + 0.94^2) = 2.039m
+        //   TutorialCard:   sqrt(1.72^2 + 0.00^2 + 0.02^2) = 1.720m
+        //
+        // DesignPlayerStart 场景值（眼高 5.84m，水平距 6.85m，yaw 45°，pitch 15°）已与
+        // PicoHeadLockedCanvas distance/viewOffset 独立——面板距离只由后者决定。
 
         private static void MeasureAndLogRuleC()
         {
-            // MissionReadout XR canvas scale: 0.00108 m/px (来自 StructureBuildOpticalPanels)
-            // ActionDock XR canvas scale:     0.00118 m/px
-            // 视距 d: 面板位于 x=-0.62m 处，相机在原点 → d≈0.65m (含头部前移)
-            const float missionScale = 0.00108f;
-            const float dockScale    = 0.00118f;
+            // 更新后的 canvas worldScale（来自 StructureBuildOpticalPanels）
+            const float missionScale = 0.00145f;   // MissionReadout + GuidePanel
+            const float dockScale    = 0.00145f;   // ActionDock
+            const float cardScale    = 0.0013f;    // Tutorial / Archive Complete card
             const float capJost      = 0.72f;
             const float capCinzel    = 0.68f;
-            const float d            = 0.65f;  // 读取距离（米）
 
-            // 来自 StructureBuildOpticalPanels.BuildMission():
-            // title("Level")  38pt → Cinzel SemiBold
-            // rule("Rule")    27pt → Jost Regular
-            // status("Status")30pt → Jost Medium（emphasis）
-            // cubeCount       29pt → Jost Regular
-            float titleCapH  = 38 * missionScale * capCinzel;
-            float ruleCapH   = 27 * missionScale * capJost;
-            float statusCapH = 30 * missionScale * capJost;
-            float cubeCapH   = 29 * missionScale * capJost;
+            // 真实视距（根据 PicoHeadLockedCanvas distance+viewOffset 计算）
+            const float dSide  = 2.039f;  // MissionReadout / GuidePanel / ActionDock
+            const float dCard  = 1.720f;  // Tutorial / Archive Complete card
 
-            // 来自 BuildDock()（字号需从源码读出；此处用保守估计 24pt）
-            float dockBtnCapH = 24 * dockScale * capJost;
+            // 当前字号（来自更新后的 StructureBuildOpticalPanels）
+            // MissionReadout: Level 42pt Jost, Rule 38pt Jost, Status 42pt Jost, CubeCount 36pt Jost
+            float levelCapH   = 42 * missionScale * capJost;
+            float ruleCapH    = 38 * missionScale * capJost;
+            float statusCapH  = 42 * missionScale * capJost;
+            float cubeCapH    = 36 * missionScale * capJost;
+            // ActionDock: 按钮标签 35pt Jost（label.Length > 2 → 35）
+            float dockBtnCapH = 35 * dockScale * capJost;
+            // GuidePanel: Controls body 38pt Jost（Fit 35-42）
+            float guideBodyCapH = 38 * missionScale * capJost;
+            // Tutorial/Archive card: Title 52pt Jost, Body ~32pt Jost, NextNote 32pt Jost
+            float cardTitleCapH  = 52 * cardScale * capJost;
+            float cardBodyCapH   = 32 * cardScale * capJost;
+            float cardNoteCapH   = 32 * cardScale * capJost;
 
-            float reqTitle  = d * 0.028f;
-            float reqBody   = d * 0.017f;
-            float reqSecond = d * 0.012f;
+            float reqTitleSide  = dSide * 0.028f;
+            float reqBodySide   = dSide * 0.017f;
+            float reqSecondSide = dSide * 0.012f;
+            float reqTitleCard  = dCard * 0.028f;
+            float reqBodyCard   = dCard * 0.017f;
+            float reqSecondCard = dCard * 0.012f;
 
             string pass(float actual, float req) => actual >= req ? "PASS" : $"FAIL (need {req*1000:F1}mm)";
 
             var sb = new System.Text.StringBuilder();
-            sb.AppendLine("[FontAudioApply] ── 规范 C 字高检查表 ──────────────────────────────────");
-            sb.AppendLine($"  视距 d = {d*1000:F0}mm");
-            sb.AppendLine($"  要求: 标题 ≥{reqTitle*1000:F1}mm  正文 ≥{reqBody*1000:F1}mm  次级 ≥{reqSecond*1000:F1}mm");
+            sb.AppendLine("[FontAudioApply] ── 规范 C 字高检查表（按真实视距）──────────────────────");
+            sb.AppendLine($"  侧板/底栏视距 d = {dSide*1000:F0}mm  要求: 正文 ≥{reqBodySide*1000:F1}mm  次级 ≥{reqSecondSide*1000:F1}mm");
+            sb.AppendLine($"  中央卡片视距 d = {dCard*1000:F0}mm  要求: 正文 ≥{reqBodyCard*1000:F1}mm  次级 ≥{reqSecondCard*1000:F1}mm");
             sb.AppendLine();
-            sb.AppendLine($"  [MissionReadout] Archive 标题  Cinzel SemiBold 38pt → {titleCapH*1000:F1}mm  {pass(titleCapH, reqTitle)}");
-            sb.AppendLine($"  [MissionReadout] Rule 正文      Jost Regular 27pt   → {ruleCapH*1000:F1}mm  {pass(ruleCapH, reqBody)}");
-            sb.AppendLine($"  [MissionReadout] Status 强调    Jost Medium 30pt    → {statusCapH*1000:F1}mm  {pass(statusCapH, reqBody)}");
-            sb.AppendLine($"  [MissionReadout] CubeCount 次级  Jost Regular 29pt  → {cubeCapH*1000:F1}mm  {pass(cubeCapH, reqSecond)}");
-            sb.AppendLine($"  [ActionDock]     按钮文字 次级    Jost Regular 24pt  → {dockBtnCapH*1000:F1}mm  {pass(dockBtnCapH, reqSecond)}");
+            sb.AppendLine($"  [MissionReadout] Level 次级     Jost 42pt × 0.00145 → {levelCapH*1000:F1}mm  {pass(levelCapH, reqSecondSide)}");
+            sb.AppendLine($"  [MissionReadout] Rule 正文      Jost 38pt × 0.00145 → {ruleCapH*1000:F1}mm  {pass(ruleCapH, reqBodySide)}");
+            sb.AppendLine($"  [MissionReadout] Status 正文    Jost 42pt × 0.00145 → {statusCapH*1000:F1}mm  {pass(statusCapH, reqBodySide)}");
+            sb.AppendLine($"  [MissionReadout] CubeCount 次级  Jost 36pt × 0.00145 → {cubeCapH*1000:F1}mm  {pass(cubeCapH, reqSecondSide)}");
+            sb.AppendLine($"  [ActionDock]     Hint/Undo/Reset Jost 35pt × 0.00145 → {dockBtnCapH*1000:F1}mm  {pass(dockBtnCapH, reqBodySide)}");
+            sb.AppendLine($"  [GuidePanel]     Controls body  Jost 38pt × 0.00145 → {guideBodyCapH*1000:F1}mm  {pass(guideBodyCapH, reqBodySide)}");
+            sb.AppendLine($"  [TutorialCard]   Title          Jost 52pt × 0.00130 → {cardTitleCapH*1000:F1}mm  {pass(cardTitleCapH, reqTitleCard)}");
+            sb.AppendLine($"  [TutorialCard]   Body           Jost 32pt × 0.00130 → {cardBodyCapH*1000:F1}mm  {pass(cardBodyCapH, reqBodyCard)}");
+            sb.AppendLine($"  [TutorialCard]   NextNote       Jost 32pt × 0.00130 → {cardNoteCapH*1000:F1}mm  {pass(cardNoteCapH, reqBodyCard)}");
             sb.AppendLine("────────────────────────────────────────────────────────────────────");
             Debug.Log(sb.ToString());
 
-            // 如有不达标项，给出调整建议（但不自动修改——需在面板 builder 里调大字号）
-            bool anyFail = titleCapH < reqTitle || ruleCapH < reqBody || statusCapH < reqBody
-                        || cubeCapH < reqSecond || dockBtnCapH < reqSecond;
+            bool anyFail = levelCapH < reqSecondSide || ruleCapH < reqBodySide || statusCapH < reqBodySide
+                        || cubeCapH < reqSecondSide || dockBtnCapH < reqBodySide || guideBodyCapH < reqBodySide
+                        || cardTitleCapH < reqTitleCard || cardBodyCapH < reqBodyCard || cardNoteCapH < reqBodyCard;
             if (anyFail)
-                Debug.LogWarning("[FontAudioApply] 有字高不达标，请在 StructureBuildOpticalPanels 中增大对应字号后重新运行。");
+                Debug.LogWarning("[FontAudioApply] 有字高不达标，请检查 StructureBuildOpticalPanels 字号/worldScale。");
         }
 
         // ── 自检 ─────────────────────────────────────────────────────────────
@@ -446,6 +478,73 @@ namespace StructureBuild.Editor
             catch (Exception ex)
             {
                 Debug.LogError("[FontAudioApply] ValidateXrWorldSpacePackage: FAIL — " + ex.Message);
+            }
+        }
+
+        // ── 标题按钮视觉状态（edit-mode 无 Update，手动设颜色/缩放）────────────
+        private enum ButtonVisualState { Normal, Hover, Press }
+
+        private static void ApplyTitleButtonState(StructureTitleButtonAction action, ButtonVisualState state)
+        {
+            var buttons = UnityEngine.Object.FindObjectsByType<StructureTitleButton>(FindObjectsInactive.Include);
+            foreach (var btn in buttons)
+            {
+                bool isTarget = btn.action == action;
+                if (!isTarget) continue;
+
+                // 取当前 localScale 作为 base（Inspector 中设置的原始值）
+                var baseScale = btn.transform.localScale;
+                // 若之前已被调整，先恢复到接近 1 的 base
+                if (Mathf.Abs(baseScale.x - 1.05f) < 0.01f || Mathf.Abs(baseScale.x - 0.97f) < 0.01f)
+                    baseScale = Vector3.one;
+
+                switch (state)
+                {
+                    case ButtonVisualState.Hover:
+                        if (btn.graphic != null)
+                            btn.graphic.color = btn.highlightedColor; // teal (0.20, 0.92, 0.88)
+                        if (btn.focusGraphic != null)
+                            btn.focusGraphic.color = btn.focusColor;  // amber glow
+                        if (btn.focusLine != null)
+                            btn.focusLine.localScale = Vector3.one;   // fully expanded underline
+                        btn.transform.localScale = baseScale * btn.hoverScale; // 1.05x
+                        break;
+                    case ButtonVisualState.Press:
+                        if (btn.graphic != null)
+                            btn.graphic.color = new Color(1f, 0.88f, 0.63f, 0.35f); // warm amber flash
+                        if (btn.focusGraphic != null)
+                            btn.focusGraphic.color = btn.focusColor;
+                        if (btn.focusLine != null)
+                            btn.focusLine.localScale = Vector3.one;
+                        btn.transform.localScale = baseScale * btn.pressScale; // 0.97x
+                        break;
+                    default:
+                        if (btn.graphic != null)
+                            btn.graphic.color = btn.normalColor;
+                        if (btn.focusGraphic != null)
+                            btn.focusGraphic.color = Color.clear;
+                        if (btn.focusLine != null)
+                            btn.focusLine.localScale = new Vector3(0.16f, 1f, 1f);
+                        btn.transform.localScale = baseScale;
+                        break;
+                }
+                EditorUtility.SetDirty(btn);
+            }
+        }
+
+        private static void ResetTitleButtonStates()
+        {
+            var buttons = UnityEngine.Object.FindObjectsByType<StructureTitleButton>(FindObjectsInactive.Include);
+            foreach (var btn in buttons)
+            {
+                var baseScale = btn.transform.localScale;
+                if (Mathf.Abs(baseScale.x - 1.05f) < 0.01f || Mathf.Abs(baseScale.x - 0.97f) < 0.01f)
+                    baseScale = Vector3.one;
+                if (btn.graphic != null) btn.graphic.color = btn.normalColor;
+                if (btn.focusGraphic != null) btn.focusGraphic.color = Color.clear;
+                if (btn.focusLine != null) btn.focusLine.localScale = new Vector3(0.16f, 1f, 1f);
+                btn.transform.localScale = baseScale;
+                EditorUtility.SetDirty(btn);
             }
         }
     }

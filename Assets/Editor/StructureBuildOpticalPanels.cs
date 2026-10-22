@@ -92,20 +92,21 @@ namespace StructureBuild.Editor
         {
             var host = Find(xr ? "PicoWorldHUD" : "DesktopHUD");
             DeleteChild(host.transform, "MissionReadout");
-            if (xr) Spatial(host, new Vector2(900, 506), new Vector2(-0.62f, UpperPanelOffset), 1.70f, 0.00108f);
+            // worldScale 0.00145 m/px → 35pt Jost body cap-height = 36.5mm ≥ d×0.017 at d=2.04m (Rule C PASS)
+            if (xr) Spatial(host, new Vector2(900, 506), new Vector2(-0.62f, UpperPanelOffset), 1.70f, 0.00145f);
             var panel = Panel("MissionReadout", host.transform, readoutSkin);
             if (xr) Box(panel.rectTransform, 0, 0, 900, 506);
             else Box(panel.rectTransform, 36, 16, 585, 329);
             float scale = xr ? 1 : 0.65f;
             var content = Content(panel.transform, 900, 506, scale);
-            var title = Text("Level", content, "Archive 01 / 12  ·  First Calibration", 38, Paper, 68, 54, 744, 58, true);
-            Fit(title, 30, 38, false);
-            TextMeshProUGUI rule = Text("Rule", content, "Place two ground blocks to illuminate both projections at once", 27, Muted, 68, 134, 744, 100);
-            Fit(rule, 24, 30, true);
+            var title = Text("Level", content, "Archive 01 / 12  ·  First Calibration", 42, Paper, 68, 54, 744, 58, true);
+            Fit(title, 35, 42, false);
+            TextMeshProUGUI rule = Text("Rule", content, "Place two ground blocks to illuminate both projections at once", 38, Muted, 68, 134, 744, 100);
+            Fit(rule, 35, 42, true);
             Line(content, 68, 256, 744);
-            var status = Text("Status", content, "Front 0/2 · Side 0/2", 30, Amber, 68, 288, 744, 70, true);
-            Fit(status, 24, 30, true);
-            var cubes = Text("CubeCount", content, "Blocks  0 / 2", 29, Paper, 68, 410, 744, 48);
+            var status = Text("Status", content, "Front 0/2 · Side 0/2", 42, Amber, 68, 288, 744, 70, true);
+            Fit(status, 35, 42, true);
+            var cubes = Text("CubeCount", content, "Blocks  0 / 2", 36, Paper, 68, 410, 744, 48);
             var hud = host.GetComponent<StructureScreenHUD>();
             hud.levelText = title; hud.ruleText = rule; hud.statusText = status; hud.cubeText = cubes; hud.viewText = null;
             if (xr)
@@ -122,7 +123,8 @@ namespace StructureBuild.Editor
         {
             var host = Find(xr ? "PicoActionDock" : "DesktopHUD");
             DeleteChild(host.transform, "ActionDock");
-            if (xr) Spatial(host, new Vector2(820, 246), new Vector2(0, LowerPanelOffset), 1.70f, 0.00118f);
+            // worldScale 0.00145 m/px → 35pt button label cap-height = 36.5mm ≥ d×0.017 at d=2.04m (Rule C PASS)
+            if (xr) Spatial(host, new Vector2(820, 246), new Vector2(0, LowerPanelOffset), 1.70f, 0.00145f);
             var panel = Panel("ActionDock", host.transform, dockSkin);
             if (xr) Fill(panel.rectTransform);
             else
@@ -142,7 +144,8 @@ namespace StructureBuild.Editor
         {
             var host = Find(xr ? "PicoQuickGuide" : "DesktopHUD");
             DeleteChild(host.transform, "GuidePanel");
-            if (xr) Spatial(host, new Vector2(690, 506), new Vector2(0.62f, UpperPanelOffset), 1.70f, 0.00108f);
+            // worldScale 0.00145 m/px → 35pt body cap-height = 36.5mm ≥ d×0.017 at d=2.04m (Rule C PASS)
+            if (xr) Spatial(host, new Vector2(690, 506), new Vector2(0.62f, UpperPanelOffset), 1.70f, 0.00145f);
             var panel = Panel("GuidePanel", host.transform, guideSkin);
             if (xr) Fill(panel.rectTransform);
             else
@@ -157,9 +160,9 @@ namespace StructureBuild.Editor
             Line(content, 58, 120, 560);
             var body = Text("Body", content,
                 "1  Pull trigger to grab a block from the left\n2  Drag to an orange cell; release to snap\n3  Turn both projections teal\n\nTap Next when done",
-                27, Muted, 58, 148, 560, 350);
-            body.lineSpacing = 10;
-            Fit(body, 25, 30, true);
+                38, Muted, 58, 148, 560, 350);
+            body.lineSpacing = 4;
+            Fit(body, 35, 42, true);
         }
 
         private static void BuildTeaching(bool xr)
@@ -188,7 +191,7 @@ namespace StructureBuild.Editor
                 32, Muted, 84, 200, 912, 272);
             body.lineSpacing = 10;
             Fit(body, 27, 32, true);
-            Text("NextArchiveNote", content, "Tap Next when done to continue through the archives", 27, Muted, 84, 496, 912, 42);
+            Text("NextArchiveNote", content, "Tap Next when done to continue through the archives", 32, Muted, 84, 496, 912, 42);
             Button(content, "Start Practice", StructureUIButtonAction.DismissInstructions, 84, 570, 360, 88, xr, true);
         }
 
