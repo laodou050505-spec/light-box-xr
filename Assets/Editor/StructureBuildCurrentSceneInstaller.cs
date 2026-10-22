@@ -372,8 +372,8 @@ namespace StructureBuild.Editor
                 "The teaching button contains a character that cannot be rendered by the English font atlas.");
             var teachingBody = picoInstructions.GetComponentsInChildren<TextMeshProUGUI>(true)
                 .FirstOrDefault(item => item.name == "Body");
-            Require(teachingBody != null && teachingBody.text.All(character => char.IsWhiteSpace(character) || cjkFont.HasCharacter(character)),
-                "The teaching body contains a character that cannot be rendered by the static Chinese font atlas.");
+            Require(teachingBody != null && teachingBody.text.All(character => char.IsWhiteSpace(character) || latinFont.HasCharacter(character)),
+                "The teaching body contains a character that cannot be rendered by the English font atlas.");
             Require(FindSceneObjects<SpaceDriftMotion>().All(IsAuthorizedSpaceDecorMotion),
                 "A fixed gameplay model has an unauthorized drift motion.");
             var spaceDecorRoots = FindSceneObjects<Transform>().Where(IsSpaceDecorRoot).ToArray();
