@@ -88,7 +88,7 @@ namespace StructureBuild.Editor
             }
 
             var scene = EditorSceneManager.OpenScene("Assets/Scenes/StructureBuild.unity", OpenSceneMode.Single);
-            var renderers = UnityEngine.Object.FindObjectsByType<Renderer>(FindObjectsSortMode.None);
+            var renderers = UnityEngine.Object.FindObjectsByType<Renderer>(FindObjectsInactive.Exclude);
             foreach (var renderer in renderers)
             {
                 if (!renderer.name.EndsWith("_Editable")) continue;

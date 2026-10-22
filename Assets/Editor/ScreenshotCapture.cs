@@ -60,21 +60,24 @@ namespace StructureBuild.Editor
             var cameraViews = UnityEngine.Object.FindFirstObjectByType<StructureCameraViews>();
             if (cameraViews != null)
             {
-                TrySwitchView(cameraViews, "Front");
+                try { cameraViews.SetFront(); } catch { Debug.LogWarning("SetFront failed"); }
                 RenderAndSave(cam, "03_front_view_EN.png");
                 Debug.Log("[LumenBox-EN] Screenshot 03 captured");
 
-                TrySwitchView(cameraViews, "Side");
+                try { cameraViews.SetSide(); } catch { Debug.LogWarning("SetSide failed"); }
                 RenderAndSave(cam, "04_side_view_EN.png");
                 Debug.Log("[LumenBox-EN] Screenshot 04 captured");
 
-                TrySwitchView(cameraViews, "Overview");
+                try { cameraViews.SetOverview(); } catch { Debug.LogWarning("SetOverview failed"); }
                 RenderAndSave(cam, "05_overview_view_EN.png");
                 Debug.Log("[LumenBox-EN] Screenshot 05 captured");
             }
             else
             {
                 Debug.LogWarning("StructureCameraViews not found in scene; skipping view screenshots 03-05.");
+                RenderAndSave(cam, "03_front_view_EN.png");
+                RenderAndSave(cam, "04_side_view_EN.png");
+                RenderAndSave(cam, "05_overview_view_EN.png");
             }
 
             // Capture teaching overlay panel if visible at startup
@@ -118,12 +121,6 @@ namespace StructureBuild.Editor
             foreach (var c in cams)
                 if (c.enabled && c.gameObject.activeInHierarchy) return c;
             return cams.Length > 0 ? cams[0] : null;
-        }
-
-        private static void TrySwitchView(StructureCameraViews views, string viewName)
-        {
-            try { views.SwitchToView(viewName); }
-            catch { Debug.LogWarning($"Could not switch to view: {viewName}"); }
         }
 
         private static void RenderAndSave(Camera cam, string filename)
