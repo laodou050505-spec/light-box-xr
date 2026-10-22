@@ -100,12 +100,12 @@ namespace StructureBuild.Editor
             var content = Content(panel.transform, 900, 506, scale);
             var title = Text("Level", content, "Archive 01 / 12  ·  First Calibration", 38, Paper, 68, 54, 744, 58, true);
             Fit(title, 30, 38, false);
-            TextMeshProUGUI rule = Text("Rule", content, "Place two ground blocks to illuminate both projections at once", 27, Muted, 68, 134, 744, 76);
-            Fit(rule, 22, 27, true);
-            Line(content, 68, 232, 744);
-            var status = Text("Status", content, "Front 0/2 · Side 0/2", 30, Amber, 68, 264, 744, 70, true);
+            TextMeshProUGUI rule = Text("Rule", content, "Place two ground blocks to illuminate both projections at once", 27, Muted, 68, 134, 744, 100);
+            Fit(rule, 24, 30, true);
+            Line(content, 68, 256, 744);
+            var status = Text("Status", content, "Front 0/2 · Side 0/2", 30, Amber, 68, 288, 744, 70, true);
             Fit(status, 24, 30, true);
-            var cubes = Text("CubeCount", content, "Blocks  0 / 2", 29, Paper, 68, 386, 744, 48);
+            var cubes = Text("CubeCount", content, "Blocks  0 / 2", 29, Paper, 68, 410, 744, 48);
             var hud = host.GetComponent<StructureScreenHUD>();
             hud.levelText = title; hud.ruleText = rule; hud.statusText = status; hud.cubeText = cubes; hud.viewText = null;
             if (xr)
@@ -157,9 +157,9 @@ namespace StructureBuild.Editor
             Line(content, 58, 120, 560);
             var body = Text("Body", content,
                 "1  Pull trigger to grab a block from the left\n2  Drag to an orange cell; release to snap\n3  Turn both projections teal\n\nTap Next when done",
-                27, Muted, 58, 148, 560, 300);
+                27, Muted, 58, 148, 560, 350);
             body.lineSpacing = 10;
-            Fit(body, 23, 27, true);
+            Fit(body, 25, 30, true);
         }
 
         private static void BuildTeaching(bool xr)
