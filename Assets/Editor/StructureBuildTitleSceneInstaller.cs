@@ -21,8 +21,8 @@ namespace StructureBuild.Editor
     {
         public const string TitleScenePath = "Assets/Scenes/StructureBuildTitle.unity";
         private const string GameplayScenePath = "Assets/Scenes/StructureBuild.unity";
-        private const string FontAssetPath = "Assets/UI/StructureBuildChineseSDF.asset";
-        private const string TitlePanelSkinPath = "Assets/UI/Generated/NanoBanana20260908/OpticalArchiveFinal/01_generated_image_url.png";
+        private const string FontAssetPath = "Assets/UI/Fonts/JostRegularSDF.asset";
+        private const string TitlePanelSkinPath = "Assets/UI/Generated/Polish-20261022/01_generated_image_url.png";
         private const string TitleCoverFeatherMaterialPath = "Assets/UI/TitleCoverFeather.mat";
         private const string TitleCoverFeatherShaderPath = "Assets/Shaders/TitleCoverFeather.shader";
         public const float TitleViewingDistance = 3.45f;

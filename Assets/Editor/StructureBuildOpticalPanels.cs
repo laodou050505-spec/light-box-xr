@@ -62,7 +62,7 @@ namespace StructureBuild.Editor
 
         public static void ApplyToLoadedScene()
         {
-            font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/UI/StructureBuildLatinSDF.asset");
+            font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/UI/Fonts/JostRegularSDF.asset");
             actions = Find("GameSystems").GetComponent<StructureHUDController>();
             guideSkin = Skin("Guide");
             dockSkin = Skin("Dock");

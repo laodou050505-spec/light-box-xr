@@ -20,7 +20,7 @@ namespace StructureBuild.Editor
     {
         private const string ScenePath = "Assets/Scenes/StructureBuild.unity";
         private const string InstallRootName = "GameplayPresentation_v2";
-        private const string FontAssetPath = "Assets/UI/StructureBuildLatinSDF.asset";
+        private const string FontAssetPath = "Assets/UI/Fonts/JostRegularSDF.asset";
         private const string BottomBarSkinPath = "Assets/UI/Generated/NanoBanana20260907/Prepared/StructureBuild_ActionDock.png";
         private const string ButtonSkinPath = "Assets/UI/Generated/Prepared/StructureBuild_Button.png";
         private const string CompletionPanelSkinPath = "Assets/UI/Generated/NanoBanana20260907/Prepared/StructureBuild_CompletionPanel.png";
@@ -697,7 +697,7 @@ namespace StructureBuild.Editor
         {
             audio.musicClip = LoadAudioClip("Environment_space_atmo-glued.mp3");
             audio.uiHoverClip = LoadAudioClip("scifi_ui_soft_02.mp3");
-            audio.uiClickClip = LoadAudioClip("scifi_ui_soft_03.mp3");
+            audio.uiClickClip = LoadAudioClip("magic_ui_soft_02.mp3");
             audio.grabClip = LoadAudioClip("scifi_ui_hard_03.mp3");
             audio.placeClip = LoadAudioClip("scifi_ui_hard_03.mp3");
             audio.rejectClip = LoadAudioClip("scifi_neg_soft_02.mp3");
