@@ -18,7 +18,7 @@ namespace StructureBuild.Editor
         {
             SetXRAutomatic(true);
             EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Android, BuildTarget.Android);
-            var report = Build(BuildTarget.Android, "Builds/结构构建-PICO.apk");
+            var report = Build(BuildTarget.Android, "Builds/EN/LumenBox-EN-PICO.apk");
             if (report.summary.result != BuildResult.Succeeded) throw new System.Exception("Android build failed: " + report.summary.result);
         }
 

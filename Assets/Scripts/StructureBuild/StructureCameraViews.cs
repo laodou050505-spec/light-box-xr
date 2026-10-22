@@ -16,7 +16,7 @@ namespace StructureBuild
         public Vector3 overviewFocusOffset = Vector3.zero;
         [Range(0.3f, 1.2f)] public float overviewDistanceScale = 0.42f;
         public float overviewDistanceOffset = -0.35f;
-        public string CurrentViewName { get; private set; } = "概览";
+        public string CurrentViewName { get; private set; } = "Overview";
 
         private Camera viewCamera;
         private Bounds overviewBounds;
@@ -43,7 +43,7 @@ namespace StructureBuild
             if (designStart != null)
             {
                 designStart.ApplyDesktopPose(orbit);
-                CurrentViewName = "概览";
+                CurrentViewName = "Overview";
                 return;
             }
             if (orbit != null)
@@ -52,27 +52,27 @@ namespace StructureBuild
                 var distance = useFixedOverviewPose ? overviewDistance : FitOverviewDistance(overviewBounds);
                 orbit.SetPose(focus, overviewYaw, overviewPitch, distance);
             }
-            CurrentViewName = "概览";
+            CurrentViewName = "Overview";
         }
 
         public void SetFront()
         {
             RefreshLayout();
             if (orbit != null) orbit.SetPose(frontBounds.center, 0f, 10f, FitUnifiedPanelDistance());
-            CurrentViewName = "正面";
+            CurrentViewName = "Front";
         }
 
         public void SetSide()
         {
             RefreshLayout();
             if (orbit != null) orbit.SetPose(sideBounds.center, 90f, 10f, FitUnifiedPanelDistance());
-            CurrentViewName = "侧面";
+            CurrentViewName = "Side";
         }
 
         public void CycleView()
         {
-            if (CurrentViewName == "概览") SetFront();
-            else if (CurrentViewName == "正面") SetSide();
+            if (CurrentViewName == "Overview") SetFront();
+            else if (CurrentViewName == "Front") SetSide();
             else SetOverview();
         }
 

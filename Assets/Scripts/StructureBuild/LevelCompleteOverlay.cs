@@ -54,13 +54,13 @@ namespace StructureBuild
             if (game == null || panelRoot == null) return;
             shownLevel = game.CurrentLevelNumber;
             var finalLevel = shownLevel >= game.TotalLevelCount;
-            var title = finalLevel ? "全部结构已归档" : "结构档案完成";
+            var title = finalLevel ? "All Archives Complete" : "Archive Complete";
             var detail = finalLevel
-                ? "12 个空间结构均已通过双面投影校验"
-                : $"档案 {shownLevel:00} 已通过双面投影校验";
+                ? "All 12 spatial structures passed dual-projection verification"
+                : $"Archive {shownLevel:00} passed dual-projection verification";
             var progress = finalLevel
-                ? "本轮探索完成"
-                : $"准备进入档案 {shownLevel + 1:00}";
+                ? "Exploration complete"
+                : $"Ready for Archive {shownLevel + 1:00}";
             if (combinedPayloadText != null)
             {
                 // PICO's compositor is most reliable when the two lower
@@ -81,7 +81,7 @@ namespace StructureBuild
                 if (detailText != null) detailText.text = detail;
                 if (progressText != null) progressText.text = progress;
             }
-            if (continueLabel != null) continueLabel.text = finalLevel ? "重新开始" : "下一关";
+            if (continueLabel != null) continueLabel.text = finalLevel ? "Restart" : "Next";
             // Sample the active gaze once. The completion card then stays
             // in the room so the player can lean and look around it.
             GetComponent<PicoHeadLockedCanvas>()?.CaptureWorldPose();

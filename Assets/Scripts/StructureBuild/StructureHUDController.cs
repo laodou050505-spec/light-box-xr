@@ -60,7 +60,7 @@ namespace StructureBuild
 
         public void RefreshViewLabel()
         {
-            if (viewLabel != null && cameraViews != null) viewLabel.text = $"视角 · {cameraViews.CurrentViewName}";
+            if (viewLabel != null && cameraViews != null) viewLabel.text = $"View · {cameraViews.CurrentViewName}";
         }
     }
 

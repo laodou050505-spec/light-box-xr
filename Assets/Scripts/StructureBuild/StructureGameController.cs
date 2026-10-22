@@ -94,7 +94,7 @@ namespace StructureBuild
         public string CurrentLevelRule => level != null ? level.rule : string.Empty;
         public int CurrentCubeCount => occupied.Count;
         public int CurrentCubeBudget => level != null ? level.cubeLimit : 0;
-        public string CurrentStatusText { get; private set; } = "等待结构输入";
+        public string CurrentStatusText { get; private set; } = "Awaiting structure input";
         public bool IsDragging => dragging;
         public bool IsLevelCompleted => levelCompleted;
         public bool IsGameplayInputAllowed => instructions == null || instructions.IsGameplayInputAllowed;
@@ -140,7 +140,7 @@ namespace StructureBuild
             if (index < 0 || index >= CampaignData.Levels.Length) return;
             StopDragVisuals();
             levelIndex = index; level = CampaignData.Levels[index]; levelCompleted = false; history.Clear(); ClearCells();
-            if (levelLabel) levelLabel.text = $"档案 {index + 1:00} / {CampaignData.Levels.Length} · {level.displayName}";
+            if (levelLabel) levelLabel.text = $"Archive {index + 1:00} / {CampaignData.Levels.Length} · {level.displayName}";
             EvaluateAndDisplay();
             CampaignProgressChanged?.Invoke();
         }
@@ -206,7 +206,7 @@ namespace StructureBuild
                 {
                     if (!TryPlaceAt(cell, false)) continue;
                     audio?.PlayHint();
-                    CurrentStatusText = $"提示: 已放置 {cell.x},{cell.y},{cell.z}";
+                    CurrentStatusText = $"Hint: placed {cell.x},{cell.y},{cell.z}";
                     if (statusLabel) statusLabel.text = CurrentStatusText;
                     return;
                 }
@@ -218,7 +218,7 @@ namespace StructureBuild
             if (!IsGameplayInputAllowed || dragging || levelCompleted || level == null) return false;
             if (occupied.Count >= level.cubeLimit)
             {
-                SetStatus("结构单元已用完，请先移动或撤回方块");
+                SetStatus("Block budget reached, move or undo first");
                 return false;
             }
 
@@ -245,7 +245,7 @@ namespace StructureBuild
             if (!IsGameplayInputAllowed || dragging || levelCompleted || cube == null || !occupied.Contains(cube.cell)) return false;
             if (occupied.Contains(cube.cell + Vector3Int.up))
             {
-                SetStatus("请先移走上方方块");
+                SetStatus("Remove the block above first");
                 return false;
             }
 
@@ -255,7 +255,7 @@ namespace StructureBuild
             occupied.Remove(origin);
             DestroyCube(origin);
             EvaluateAndDisplay();
-            SetStatus("拖动方块到高亮落点");
+            SetStatus("Drag block to a highlighted cell");
             audio?.PlayGrab();
             return true;
         }
@@ -288,7 +288,7 @@ namespace StructureBuild
                 }
             }
 
-            SetStatus(valid ? $"释放以放置 {cell.x},{cell.y},{cell.z}" : "将方块移动到棋盘高亮区域");
+            SetStatus(valid ? $"Release to place at {cell.x},{cell.y},{cell.z}" : "Move block over a highlighted grid cell");
             return valid;
         }
 
@@ -319,7 +319,7 @@ namespace StructureBuild
                 SpawnCube(origin.Value);
             }
             EvaluateAndDisplay();
-            SetStatus("未命中合法落点，方块已返回");
+            SetStatus("No valid drop target — block returned");
             audio?.PlayReject();
             return false;
         }
@@ -335,7 +335,7 @@ namespace StructureBuild
                 SpawnCube(origin.Value);
             }
             EvaluateAndDisplay();
-            SetStatus("已取消拖动");
+            SetStatus("Drag cancelled");
             audio?.PlayReject();
         }
 
@@ -371,19 +371,19 @@ namespace StructureBuild
         private void EvaluateAndDisplay()
         {
             evaluation = ProjectionRules.Evaluate(occupied, level);
-            if (cubeCountLabel) cubeCountLabel.text = $"方块 {occupied.Count} / {level.cubeLimit}";
+            if (cubeCountLabel) cubeCountLabel.text = $"Blocks {occupied.Count} / {level.cubeLimit}";
             if (statusLabel)
             {
                 CurrentStatusText = evaluation.complete
-                    ? "正面与侧面投影已吻合 · 结构完成"
-                    : $"正面 {evaluation.front.matched}/{evaluation.front.targetCount} · 侧面 {evaluation.side.matched}/{evaluation.side.targetCount}";
+                    ? "Front & side projections matched · Structure complete"
+                    : $"Front {evaluation.front.matched}/{evaluation.front.targetCount} · Side {evaluation.side.matched}/{evaluation.side.targetCount}";
                 statusLabel.text = CurrentStatusText;
             }
             else
             {
                 CurrentStatusText = evaluation.complete
-                    ? "正面与侧面投影已吻合 · 结构完成"
-                    : $"正面 {evaluation.front.matched}/{evaluation.front.targetCount} · 侧面 {evaluation.side.matched}/{evaluation.side.targetCount}";
+                    ? "Front & side projections matched · Structure complete"
+                    : $"Front {evaluation.front.matched}/{evaluation.front.targetCount} · Side {evaluation.side.matched}/{evaluation.side.targetCount}";
             }
             UpdateProjectionPanel(frontPanel, evaluation.frontCurrent, level.frontHeights, level.width);
             UpdateProjectionPanel(sidePanel, evaluation.sideCurrent, level.sideHeights, level.depth);

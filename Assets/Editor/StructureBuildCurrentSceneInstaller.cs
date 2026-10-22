@@ -20,7 +20,7 @@ namespace StructureBuild.Editor
     {
         private const string ScenePath = "Assets/Scenes/StructureBuild.unity";
         private const string InstallRootName = "GameplayPresentation_v2";
-        private const string FontAssetPath = "Assets/UI/StructureBuildChineseSDF.asset";
+        private const string FontAssetPath = "Assets/UI/StructureBuildLatinSDF.asset";
         private const string BottomBarSkinPath = "Assets/UI/Generated/NanoBanana20260907/Prepared/StructureBuild_ActionDock.png";
         private const string ButtonSkinPath = "Assets/UI/Generated/Prepared/StructureBuild_Button.png";
         private const string CompletionPanelSkinPath = "Assets/UI/Generated/NanoBanana20260907/Prepared/StructureBuild_CompletionPanel.png";
@@ -307,7 +307,7 @@ namespace StructureBuild.Editor
                     quickGuideRect.sizeDelta.y * quickGuideFollower.worldScale >= missionRect.sizeDelta.y * missionFollower.worldScale * 0.98f &&
                     quickGuideRect.sizeDelta.y * quickGuideFollower.worldScale <= missionRect.sizeDelta.y * missionFollower.worldScale * 1.02f &&
                     quickGuideBody != null && quickGuideBody.fontSize >= 22f &&
-                    quickGuideBody.text.Contains("下一关"),
+                    quickGuideBody.text.Contains("Next"),
                 "The persistent quick guide must remain readable, narrower than the mission panel, and top-aligned at matching visible height.");
             var audio = FindSceneObject("GameSystems")?.GetComponent<StructureAudioController>();
             Require(audio != null && audio.musicClip != null && audio.grabClip != null && audio.placeClip != null &&
@@ -362,14 +362,14 @@ namespace StructureBuild.Editor
                 "The cube source needs a collider for the clear-of-pedestal drag preview path.");
             Require(game.minimumControllerPreviewClearance >= 0.18f && game.minimumSourcePreviewClearance >= 0.12f,
                 "Dragged cube previews need explicit controller and source clearances to prevent model clipping.");
-            var requiredChinese = "光匣教学关开始练习指向左侧方块源按扳机抓取棋盘橙色高亮松开自动吸附正面侧面投影都青绿色完成点击下一关";
-            var cjkFont = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontAssetPath);
-            Require(cjkFont != null && requiredChinese.All(character => cjkFont.HasCharacter(character)),
-                "The static Chinese font atlas is missing one or more visible teaching characters.");
+            var requiredAscii = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 .,-/";
+            var latinFont = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontAssetPath);
+            Require(latinFont != null && requiredAscii.All(character => char.IsWhiteSpace(character) || latinFont.HasCharacter(character)),
+                "The English font atlas is missing one or more required ASCII characters.");
             var teachingLabel = picoInstructions.GetComponentsInChildren<TextMeshProUGUI>(true)
-                .FirstOrDefault(item => item.name == "Label" && item.text == "开始练习");
-            Require(teachingLabel != null && teachingLabel.text.All(character => char.IsWhiteSpace(character) || cjkFont.HasCharacter(character)),
-                "The teaching button contains a character that cannot be rendered by the static Chinese font atlas.");
+                .FirstOrDefault(item => item.name == "Label" && item.text == "Start Practice");
+            Require(teachingLabel != null && teachingLabel.text.All(character => char.IsWhiteSpace(character) || latinFont.HasCharacter(character)),
+                "The teaching button contains a character that cannot be rendered by the English font atlas.");
             var teachingBody = picoInstructions.GetComponentsInChildren<TextMeshProUGUI>(true)
                 .FirstOrDefault(item => item.name == "Body");
             Require(teachingBody != null && teachingBody.text.All(character => char.IsWhiteSpace(character) || cjkFont.HasCharacter(character)),
@@ -500,15 +500,15 @@ namespace StructureBuild.Editor
                     game.Undo();
                     Require(game.CurrentCubeCount == 0, "Undo did not restore the drag placement.");
                     views.SetFront();
-                    Require(views.CurrentViewName == "正面", "Front camera view failed.");
+                    Require(views.CurrentViewName == "Front", "Front camera view failed.");
                     var frontViewDistance = views.orbit != null ? views.orbit.distance : float.NaN;
                     views.SetSide();
-                    Require(views.CurrentViewName == "侧面", "Side camera view failed.");
+                    Require(views.CurrentViewName == "Side", "Side camera view failed.");
                     var sideViewDistance = views.orbit != null ? views.orbit.distance : float.NaN;
                     Require(!float.IsNaN(frontViewDistance) && Mathf.Abs(frontViewDistance - sideViewDistance) < 0.001f,
                         $"Front and side camera distances must match. Front={frontViewDistance:F3}, Side={sideViewDistance:F3}.");
                     views.SetOverview();
-                    Require(views.CurrentViewName == "概览", "Overview camera view failed.");
+                    Require(views.CurrentViewName == "Overview", "Overview camera view failed.");
                     var overviewViewDistance = views.orbit != null ? views.orbit.distance : float.NaN;
                     Require(!float.IsNaN(overviewViewDistance) && Mathf.Abs(overviewViewDistance - designStart.DerivedDesktopDistance) < 0.02f,
                         $"Opening overview camera distance is not derived from DesignPlayerStart: {overviewViewDistance:F3}.");
@@ -744,10 +744,10 @@ namespace StructureBuild.Editor
             SetAnchors(desktopCard.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(720f, 540f), new Vector2(0.5f, 0.5f));
             var desktopEyebrow = CreateText("Eyebrow", desktopCard.transform, font, "LIGHTBOX  /  FIRST ARCHIVE", 15f, Amber, FontStyles.Bold, TextAlignmentOptions.Center);
             SetAnchors(desktopEyebrow.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -42f), new Vector2(-100f, 26f), new Vector2(0.5f, 1f));
-            var desktopTitle = CreateText("Title", desktopCard.transform, font, "光匣教学关", 36f, Ice, FontStyles.Bold, TextAlignmentOptions.Center);
+            var desktopTitle = CreateText("Title", desktopCard.transform, font, "LUMEN BOX — Tutorial", 36f, Ice, FontStyles.Bold, TextAlignmentOptions.Center);
             SetAnchors(desktopTitle.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -82f), new Vector2(-100f, 54f), new Vector2(0.5f, 1f));
             var desktopBody = CreateText("Body", desktopCard.transform, font,
-                "教学关只需 2 块地面方块\n1  指向左侧方块源，按扳机抓取\n2  拖到棋盘橙色高亮格，松开后自动吸附\n3  让正面与侧面投影都变成青绿色\n完成后点击下一关，继续后面的档案",
+                "The tutorial requires only 2 ground blocks.\n1  Aim at the block source on the left; pull trigger\n2  Drag to an orange cell; release to snap\n3  Turn both the front and side projections teal\nTap Next when done to continue through the archives",
                 19f, Muted, FontStyles.Normal, TextAlignmentOptions.Left);
             desktopBody.lineSpacing = 8f;
             SetAnchors(desktopBody.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(74f, -160f), new Vector2(-148f, 220f), new Vector2(0.5f, 1f));
@@ -760,7 +760,7 @@ namespace StructureBuild.Editor
             desktopButtonBehaviour.background = desktopButton;
             desktopButtonBehaviour.normalColor = Color.white;
             desktopButtonBehaviour.hoverColor = new Color(0.78f, 1f, 1f, 1f);
-            var desktopButtonLabel = CreateText("Label", desktopButton.transform, font, "开始练习", 24f, Ice, FontStyles.Bold, TextAlignmentOptions.Center);
+            var desktopButtonLabel = CreateText("Label", desktopButton.transform, font, "Start Practice", 24f, Ice, FontStyles.Bold, TextAlignmentOptions.Center);
             SetAnchors(desktopButtonLabel.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f));
 
             var pico = CreateRect("GameplayInstructions_Pico", parent);
@@ -778,10 +778,10 @@ namespace StructureBuild.Editor
             ApplyUiSkinUnstretched(picoPanel, tutorialPanelSkin);
             var picoLayer = CreateRect("Layer", pico.transform);
             SetAnchors(picoLayer.GetComponent<RectTransform>(), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f));
-            var picoTitle = CreateText("Title", picoLayer.transform, font, "光匣教学关", 46f, Ice, FontStyles.Bold, TextAlignmentOptions.Center);
+            var picoTitle = CreateText("Title", picoLayer.transform, font, "LUMEN BOX — Tutorial", 46f, Ice, FontStyles.Bold, TextAlignmentOptions.Center);
             SetAnchors(picoTitle.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -78f), new Vector2(-128f, 62f), new Vector2(0.5f, 1f));
             var picoBody = CreateText("Body", picoLayer.transform, font,
-                "教学关只需 2 块地面方块\n1  指向左侧方块源，按扳机抓取\n2  拖到棋盘橙色高亮格，松开后自动吸附\n3  让正面与侧面投影都变成青绿色\n完成后点击下一关，继续后面的档案",
+                "The tutorial requires only 2 ground blocks.\n1  Aim at the block source on the left; pull trigger\n2  Drag to an orange cell; release to snap\n3  Turn both the front and side projections teal\nTap Next when done to continue through the archives",
                 31f, Muted, FontStyles.Normal, TextAlignmentOptions.Left);
             picoBody.lineSpacing = 12f;
             SetAnchors(picoBody.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(82f, -178f), new Vector2(-164f, 310f), new Vector2(0.5f, 1f));
@@ -798,7 +798,7 @@ namespace StructureBuild.Editor
             picoButtonBehaviour.backgroundGraphic = picoButton;
             picoButtonBehaviour.normalColor = Color.white;
             picoButtonBehaviour.highlightedColor = new Color(0.78f, 1f, 1f, 1f);
-            var picoButtonLabel = CreateText("Label", picoButton.transform, font, "开始练习", 27f, Ice, FontStyles.Bold, TextAlignmentOptions.Center);
+            var picoButtonLabel = CreateText("Label", picoButton.transform, font, "Start Practice", 27f, Ice, FontStyles.Bold, TextAlignmentOptions.Center);
             SetAnchors(picoButtonLabel.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f));
 
             controller.desktopPanelRoot = desktopLayer.gameObject;
@@ -837,15 +837,15 @@ namespace StructureBuild.Editor
             var accent = CreatePanel("Accent", info.transform, Amber);
             SetAnchors(accent.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 1f), Vector2.zero, new Vector2(5f, 0f), new Vector2(0f, 0.5f));
 
-            var level = CreateText("Level", info.transform, font, "结构档案 01 / 12", 25f, Ice, FontStyles.Normal, TextAlignmentOptions.TopLeft);
+            var level = CreateText("Level", info.transform, font, "Archive 01 / 12", 25f, Ice, FontStyles.Normal, TextAlignmentOptions.TopLeft);
             SetAnchors(level.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(22f, -12f), new Vector2(-42f, 38f), new Vector2(0f, 1f));
-            var rule = CreateText("Rule", info.transform, font, "分析两面投影，复原空间结构", 16f, Muted, FontStyles.Normal, TextAlignmentOptions.Left);
+            var rule = CreateText("Rule", info.transform, font, "Analyze both projections to restore the structure", 16f, Muted, FontStyles.Normal, TextAlignmentOptions.Left);
             SetAnchors(rule.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(22f, -53f), new Vector2(-42f, 26f), new Vector2(0f, 1f));
-            var status = CreateText("Status", info.transform, font, "等待结构输入", 17f, Amber, FontStyles.Normal, TextAlignmentOptions.Left);
+            var status = CreateText("Status", info.transform, font, "Awaiting structure input", 17f, Amber, FontStyles.Normal, TextAlignmentOptions.Left);
             SetAnchors(status.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(22f, -91f), new Vector2(-42f, 28f), new Vector2(0f, 1f));
-            var cube = CreateText("CubeCount", info.transform, font, "结构单元 0 / 3", 15f, Cyan, FontStyles.Normal, TextAlignmentOptions.Left);
+            var cube = CreateText("CubeCount", info.transform, font, "Blocks 0 / 3", 15f, Cyan, FontStyles.Normal, TextAlignmentOptions.Left);
             SetAnchors(cube.rectTransform, new Vector2(0f, 0f), new Vector2(0.5f, 0f), new Vector2(22f, 19f), new Vector2(-8f, 24f), new Vector2(0f, 0f));
-            var view = CreateText("View", info.transform, font, "视角 概览", 15f, Cyan, FontStyles.Normal, TextAlignmentOptions.Right);
+            var view = CreateText("View", info.transform, font, "View: Overview", 15f, Cyan, FontStyles.Normal, TextAlignmentOptions.Right);
             SetAnchors(view.rectTransform, new Vector2(0.5f, 0f), new Vector2(1f, 0f), new Vector2(8f, 19f), new Vector2(-20f, 24f), new Vector2(0f, 0f));
 
             var dock = CreatePanel("ActionDock", root.transform, Ink);
@@ -859,12 +859,12 @@ namespace StructureBuild.Editor
             horizontal.childControlHeight = true;
             horizontal.childForceExpandWidth = true;
             horizontal.childForceExpandHeight = true;
-            CreateScreenButton(dock.transform, font, "提示", StructureUIButtonAction.Hint, actions, Amber, buttonSkin);
-            CreateScreenButton(dock.transform, font, "撤回", StructureUIButtonAction.Undo, actions, Cyan, buttonSkin);
-            CreateScreenButton(dock.transform, font, "重置", StructureUIButtonAction.Reset, actions, new Color(0.92f, 0.38f, 0.26f, 1f), buttonSkin);
-            CreateScreenButton(dock.transform, font, "概览", StructureUIButtonAction.Overview, actions, Ice, buttonSkin);
-            CreateScreenButton(dock.transform, font, "正面", StructureUIButtonAction.Front, actions, Ice, buttonSkin);
-            CreateScreenButton(dock.transform, font, "侧面", StructureUIButtonAction.Side, actions, Ice, buttonSkin);
+            CreateScreenButton(dock.transform, font, "Hint", StructureUIButtonAction.Hint, actions, Amber, buttonSkin);
+            CreateScreenButton(dock.transform, font, "Undo", StructureUIButtonAction.Undo, actions, Cyan, buttonSkin);
+            CreateScreenButton(dock.transform, font, "Reset", StructureUIButtonAction.Reset, actions, new Color(0.92f, 0.38f, 0.26f, 1f), buttonSkin);
+            CreateScreenButton(dock.transform, font, "Overview", StructureUIButtonAction.Overview, actions, Ice, buttonSkin);
+            CreateScreenButton(dock.transform, font, "Front", StructureUIButtonAction.Front, actions, Ice, buttonSkin);
+            CreateScreenButton(dock.transform, font, "Side", StructureUIButtonAction.Side, actions, Ice, buttonSkin);
 
             CreateDesktopCompletionOverlay(root.transform, game, actions, font, buttonSkin, completionPanelSkin);
 
@@ -921,15 +921,15 @@ namespace StructureBuild.Editor
             SetAnchors(info.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -20f), new Vector2(900f, 426f), new Vector2(0f, 1f));
             // Four concise, evenly spaced information lines use the full
             // panel instead of leaving a decorative but empty lower half.
-            var level = CreateText("Level", info.transform, font, "结构档案 01 / 12", 33f, Ice, FontStyles.Bold, TextAlignmentOptions.TopLeft);
+            var level = CreateText("Level", info.transform, font, "Archive 01 / 12", 33f, Ice, FontStyles.Bold, TextAlignmentOptions.TopLeft);
             SetAnchors(level.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(58f, -28f), new Vector2(-100f, 44f), new Vector2(0f, 1f));
-            var rule = CreateText("Rule", info.transform, font, "分析两面投影，复原空间结构", 22f, Muted, FontStyles.Normal, TextAlignmentOptions.Left);
+            var rule = CreateText("Rule", info.transform, font, "Analyze both projections to restore the structure", 22f, Muted, FontStyles.Normal, TextAlignmentOptions.Left);
             SetAnchors(rule.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(58f, -82f), new Vector2(-100f, 34f), new Vector2(0f, 1f));
-            var status = CreateText("Status", info.transform, font, "等待结构输入", 25f, Amber, FontStyles.Bold, TextAlignmentOptions.Left);
+            var status = CreateText("Status", info.transform, font, "Awaiting structure input", 25f, Amber, FontStyles.Bold, TextAlignmentOptions.Left);
             SetAnchors(status.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(58f, -132f), new Vector2(-100f, 36f), new Vector2(0f, 1f));
-            var cube = CreateText("CubeCount", info.transform, font, "结构单元 0 / 3", 23f, Cyan, FontStyles.Bold, TextAlignmentOptions.Left);
+            var cube = CreateText("CubeCount", info.transform, font, "Blocks 0 / 3", 23f, Cyan, FontStyles.Bold, TextAlignmentOptions.Left);
             SetAnchors(cube.rectTransform, new Vector2(0f, 0f), new Vector2(0.5f, 0f), new Vector2(58f, 24f), new Vector2(-16f, 34f), new Vector2(0f, 0f));
-            var view = CreateText("View", info.transform, font, "视角  概览", 23f, Cyan, FontStyles.Bold, TextAlignmentOptions.Right);
+            var view = CreateText("View", info.transform, font, "View  Overview", 23f, Cyan, FontStyles.Bold, TextAlignmentOptions.Right);
             SetAnchors(view.rectTransform, new Vector2(0.5f, 0f), new Vector2(1f, 0f), new Vector2(12f, 24f), new Vector2(-62f, 34f), new Vector2(0f, 0f));
 
             var dockRoot = CreateRect("PicoActionDock", parent);
@@ -956,12 +956,12 @@ namespace StructureBuild.Editor
             // fit in one lower-centre panel inside the PICO comfort frame.
             const float buttonWidth = 150f;
             const float buttonHeight = 190f;
-            CreateWorldButton(dock.transform, font, "提示", StructureUIButtonAction.Hint, actions, new Vector2(-465f, -8f), Amber, null, new Vector2(buttonWidth, buttonHeight));
-            CreateWorldButton(dock.transform, font, "撤回", StructureUIButtonAction.Undo, actions, new Vector2(-279f, -8f), Cyan, null, new Vector2(buttonWidth, buttonHeight));
-            CreateWorldButton(dock.transform, font, "重置", StructureUIButtonAction.Reset, actions, new Vector2(-93f, -8f), new Color(0.92f, 0.38f, 0.26f, 1f), null, new Vector2(buttonWidth, buttonHeight));
-            CreateWorldButton(dock.transform, font, "概览", StructureUIButtonAction.Overview, actions, new Vector2(93f, -8f), Ice, null, new Vector2(buttonWidth, buttonHeight));
-            CreateWorldButton(dock.transform, font, "正面", StructureUIButtonAction.Front, actions, new Vector2(279f, -8f), Ice, null, new Vector2(buttonWidth, buttonHeight));
-            CreateWorldButton(dock.transform, font, "侧面", StructureUIButtonAction.Side, actions, new Vector2(465f, -8f), Ice, null, new Vector2(buttonWidth, buttonHeight));
+            CreateWorldButton(dock.transform, font, "Hint", StructureUIButtonAction.Hint, actions, new Vector2(-465f, -8f), Amber, null, new Vector2(buttonWidth, buttonHeight));
+            CreateWorldButton(dock.transform, font, "Undo", StructureUIButtonAction.Undo, actions, new Vector2(-279f, -8f), Cyan, null, new Vector2(buttonWidth, buttonHeight));
+            CreateWorldButton(dock.transform, font, "Reset", StructureUIButtonAction.Reset, actions, new Vector2(-93f, -8f), new Color(0.92f, 0.38f, 0.26f, 1f), null, new Vector2(buttonWidth, buttonHeight));
+            CreateWorldButton(dock.transform, font, "Overview", StructureUIButtonAction.Overview, actions, new Vector2(93f, -8f), Ice, null, new Vector2(buttonWidth, buttonHeight));
+            CreateWorldButton(dock.transform, font, "Front", StructureUIButtonAction.Front, actions, new Vector2(279f, -8f), Ice, null, new Vector2(buttonWidth, buttonHeight));
+            CreateWorldButton(dock.transform, font, "Side", StructureUIButtonAction.Side, actions, new Vector2(465f, -8f), Ice, null, new Vector2(buttonWidth, buttonHeight));
             // The completion card sits at the centre of the user's view and
             // follows head movement so the next-level action is never lost.
             CreatePicoCompletionOverlay(parent, designStart, game, actions, font, buttonSkin, completionPanelSkin);
@@ -1007,13 +1007,13 @@ namespace StructureBuild.Editor
             var panel = CreatePanel("GuidePanel", root.transform, new Color(0.008f, 0.045f, 0.066f, 0.90f));
             ApplyUiSkinUnstretched(panel, quickGuidePanelSkin);
             SetAnchors(panel.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f));
-            var title = CreateText("Title", panel.transform, font, "操作提示", 27f, Ice, FontStyles.Bold, TextAlignmentOptions.TopLeft);
+            var title = CreateText("Title", panel.transform, font, "Controls", 27f, Ice, FontStyles.Bold, TextAlignmentOptions.TopLeft);
             SetAnchors(title.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(60f, -35f), new Vector2(-118f, 38f), new Vector2(0f, 1f));
             var body = CreateText("Body", panel.transform, font,
-                "1  指向左侧方块源，按扳机抓取\n" +
-                "2  拖到棋盘橙色高亮格，松开后吸附\n" +
-                "3  让正面与侧面投影变成青绿色\n" +
-                "完成后点击下一关",
+                "1  Aim at the block source; pull trigger\n" +
+                "2  Drag to an orange cell; release to snap\n" +
+                "3  Turn both projections teal\n" +
+                "Tap Next when done",
                 22f, new Color(0.62f, 0.87f, 0.91f, 1f), FontStyles.Normal, TextAlignmentOptions.TopLeft);
             body.textWrappingMode = TextWrappingModes.NoWrap;
             body.overflowMode = TextOverflowModes.Ellipsis;
@@ -1174,8 +1174,8 @@ namespace StructureBuild.Editor
 
         private static TMP_FontAsset EnsureChineseFontAsset()
         {
-            var characters = " 0123456789/·,.，；、…:-+×ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" +
-                "结构档案分析两面投影复原空间单元等待输入正面侧面吻合完成当前视角概览提示撤回重置方块已放置未命中合法网格位置全部个三点校准首次先让枚地同时亮起初层阶梯第一次使用垂直堆叠双峰折线座高点在错位对应信标匹配四列不同高度棱镜辨认塔与的回声需要正确换位终端光门组合进入深层折光回廊让共用深度双核偏振同一必须在深处留下第二核心暗列阵把藏进条光柱四壁共振用主同时遮住三层终极光栅满压缩成脊游戏操作面板释放拖动高亮区域落点返回取消请先移走上方结构用完下一关重新开始归档准备进入本轮探索已通过校验全结构将到棋盘磁性吸附玩法说明从左侧源抓取一个拖到松开后自动吸附同时匹配可用关卡按顺序推进开始游戏启动会随以有限两道控制器射线指向按钮并按下扳机桌面版可直接点击退出光匣教学只需块指向左扳机抓取橙色格都变成青绿色后继续档案首次校准放两地面练习操作提示棋盘松开点击";
+            var characters = " 0123456789/·,….:-+×ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" +
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 .,!?:;-/·&'\"()%+";
             foreach (var level in CampaignData.Levels) characters += level.displayName + level.rule;
             var existing = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontAssetPath);
             if (existing != null)
@@ -1241,11 +1241,11 @@ namespace StructureBuild.Editor
             SetAnchors(topAccent.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(0f, 5f), new Vector2(0.5f, 1f));
             var eyebrow = CreateText("Eyebrow", card.transform, font, "STRUCTURE ARCHIVE  /  VALIDATED", 16f, Amber, FontStyles.Bold, TextAlignmentOptions.Center);
             SetAnchors(eyebrow.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -50f), new Vector2(0f, 32f), new Vector2(0.5f, 1f));
-            var title = CreateText("Title", card.transform, font, "结构档案完成", 39f, Ice, FontStyles.Bold, TextAlignmentOptions.Center);
+            var title = CreateText("Title", card.transform, font, "Archive Complete", 39f, Ice, FontStyles.Bold, TextAlignmentOptions.Center);
             SetAnchors(title.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -98f), new Vector2(0f, 58f), new Vector2(0.5f, 1f));
-            var detail = CreateText("Detail", card.transform, font, "档案 01 已通过双面投影校验", 20f, Muted, FontStyles.Normal, TextAlignmentOptions.Center);
+            var detail = CreateText("Detail", card.transform, font, "Archive 01 passed dual-projection verification", 20f, Muted, FontStyles.Normal, TextAlignmentOptions.Center);
             SetAnchors(detail.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -166f), new Vector2(0f, 36f), new Vector2(0.5f, 1f));
-            var progress = CreateText("Progress", card.transform, font, "准备进入档案 02", 18f, Cyan, FontStyles.Normal, TextAlignmentOptions.Center);
+            var progress = CreateText("Progress", card.transform, font, "Ready for Archive 02", 18f, Cyan, FontStyles.Normal, TextAlignmentOptions.Center);
             SetAnchors(progress.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -207f), new Vector2(0f, 30f), new Vector2(0.5f, 1f));
             var button = CreatePanel("ContinueButton", card.transform, new Color(0.02f, 0.27f, 0.29f, 1f));
             ApplyUiSkin(button, buttonSkin);
@@ -1256,7 +1256,7 @@ namespace StructureBuild.Editor
             buttonBehaviour.background = button;
             buttonBehaviour.normalColor = Color.white;
             buttonBehaviour.hoverColor = new Color(0.78f, 1f, 1f, 1f);
-            var buttonLabel = CreateText("Label", button.transform, font, "下一关", 23f, Ice, FontStyles.Bold, TextAlignmentOptions.Center);
+            var buttonLabel = CreateText("Label", button.transform, font, "Next", 23f, Ice, FontStyles.Bold, TextAlignmentOptions.Center);
             SetAnchors(buttonLabel.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f));
 
             overlay.panelRoot = layer.gameObject;
@@ -1304,7 +1304,7 @@ namespace StructureBuild.Editor
             // It is separate from the two lower archive readouts so the card
             // follows its graphic hierarchy: title in the frame, details on
             // the two cyan information rules beneath it.
-            var title = CreateText("CompletionTitle", card.transform, font, "结构档案完成", 50f, Ice, FontStyles.Bold, TextAlignmentOptions.Center);
+            var title = CreateText("CompletionTitle", card.transform, font, "Archive Complete", 50f, Ice, FontStyles.Bold, TextAlignmentOptions.Center);
             title.textWrappingMode = TextWrappingModes.NoWrap;
             title.overflowMode = TextOverflowModes.Overflow;
             SetAnchors(title.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 145f), new Vector2(940f, 84f), new Vector2(0.5f, 0.5f));
@@ -1312,13 +1312,13 @@ namespace StructureBuild.Editor
             // text rects are more predictable than line-spacing offsets and
             // let long Chinese copy be fitted without touching either rule.
             var detail = CreateText("CompletionDetail", card.transform, font,
-                "档案 01 已通过双面投影校验", 25f, new Color(0.72f, 0.87f, 0.90f, 1f), FontStyles.Normal, TextAlignmentOptions.Center);
+                "Archive 01 passed dual-projection verification", 25f, new Color(0.72f, 0.87f, 0.90f, 1f), FontStyles.Normal, TextAlignmentOptions.Center);
             detail.enableAutoSizing = true;
             detail.fontSizeMin = 20f;
             detail.fontSizeMax = 25f;
             SetAnchors(detail.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -6f), new Vector2(850f, 38f), new Vector2(0.5f, 0.5f));
             var progress = CreateText("CompletionProgress", card.transform, font,
-                "准备进入档案 02", 23f, new Color(0.45f, 0.96f, 1f, 1f), FontStyles.Normal, TextAlignmentOptions.Center);
+                "Ready for Archive 02", 23f, new Color(0.45f, 0.96f, 1f, 1f), FontStyles.Normal, TextAlignmentOptions.Center);
             progress.enableAutoSizing = true;
             progress.fontSizeMin = 19f;
             progress.fontSizeMax = 23f;
@@ -1334,7 +1334,7 @@ namespace StructureBuild.Editor
             buttonBehaviour.backgroundGraphic = button;
             buttonBehaviour.normalColor = Color.white;
             buttonBehaviour.highlightedColor = new Color(0.78f, 1f, 1f, 1f);
-            var buttonLabel = CreateText("Label", button.transform, font, "下一关", 32f, Ice, FontStyles.Bold, TextAlignmentOptions.Center);
+            var buttonLabel = CreateText("Label", button.transform, font, "Next", 32f, Ice, FontStyles.Bold, TextAlignmentOptions.Center);
             SetAnchors(buttonLabel.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f));
 
             overlay.panelRoot = layer.gameObject;

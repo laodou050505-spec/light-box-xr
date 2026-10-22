@@ -62,7 +62,7 @@ namespace StructureBuild.Editor
 
         public static void ApplyToLoadedScene()
         {
-            font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/UI/StructureBuildChineseSDF.asset");
+            font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/UI/StructureBuildLatinSDF.asset");
             actions = Find("GameSystems").GetComponent<StructureHUDController>();
             guideSkin = Skin("Guide");
             dockSkin = Skin("Dock");
@@ -98,14 +98,14 @@ namespace StructureBuild.Editor
             else Box(panel.rectTransform, 36, 16, 585, 329);
             float scale = xr ? 1 : 0.65f;
             var content = Content(panel.transform, 900, 506, scale);
-            var title = Text("Level", content, "结构档案 01 / 12  ·  首次校准", 38, Paper, 68, 54, 744, 58, true);
+            var title = Text("Level", content, "Archive 01 / 12  ·  First Calibration", 38, Paper, 68, 54, 744, 58, true);
             Fit(title, 30, 38, false);
-            TextMeshProUGUI rule = Text("Rule", content, "先放两块地面方块，让正面与侧面同时亮起", 27, Muted, 68, 134, 744, 76);
+            TextMeshProUGUI rule = Text("Rule", content, "Place two ground blocks to illuminate both projections at once", 27, Muted, 68, 134, 744, 76);
             Fit(rule, 22, 27, true);
             Line(content, 68, 232, 744);
-            var status = Text("Status", content, "正面 0/2 · 侧面 0/2", 30, Amber, 68, 264, 744, 70, true);
+            var status = Text("Status", content, "Front 0/2 · Side 0/2", 30, Amber, 68, 264, 744, 70, true);
             Fit(status, 24, 30, true);
-            var cubes = Text("CubeCount", content, "结构单元  0 / 2", 29, Paper, 68, 386, 744, 48);
+            var cubes = Text("CubeCount", content, "Blocks  0 / 2", 29, Paper, 68, 386, 744, 48);
             var hud = host.GetComponent<StructureScreenHUD>();
             hud.levelText = title; hud.ruleText = rule; hud.statusText = status; hud.cubeText = cubes; hud.viewText = null;
             if (xr)
@@ -133,9 +133,9 @@ namespace StructureBuild.Editor
                 panel.rectTransform.sizeDelta = new Vector2(574, 172);
             }
             var content = Content(panel.transform, 820, 246, xr ? 1 : 0.7f);
-            Button(content, "提示", StructureUIButtonAction.Hint, 52, 55, 222, 136, xr, true);
-            Button(content, "撤回", StructureUIButtonAction.Undo, 299, 55, 222, 136, xr, false);
-            Button(content, "重置", StructureUIButtonAction.Reset, 546, 55, 222, 136, xr, false);
+            Button(content, "Hint", StructureUIButtonAction.Hint, 52, 55, 222, 136, xr, true);
+            Button(content, "Undo", StructureUIButtonAction.Undo, 299, 55, 222, 136, xr, false);
+            Button(content, "Reset", StructureUIButtonAction.Reset, 546, 55, 222, 136, xr, false);
         }
 
         private static void BuildGuide(bool xr)
@@ -153,10 +153,10 @@ namespace StructureBuild.Editor
                 panel.rectTransform.sizeDelta = new Vector2(449, 299);
             }
             var content = Content(panel.transform, 690, 506, xr ? 1 : 0.65f);
-            Text("Title", content, "操作提示", 38, Paper, 58, 48, 560, 54, true);
+            Text("Title", content, "Controls", 38, Paper, 58, 48, 560, 54, true);
             Line(content, 58, 120, 560);
             var body = Text("Body", content,
-                "1  按扳机抓取左侧方块\n2  拖到橙色格，松开后吸附\n3  让两面投影都变成青绿色\n\n完成后点击下一关",
+                "1  Pull trigger to grab a block from the left\n2  Drag to an orange cell; release to snap\n3  Turn both projections teal\n\nTap Next when done",
                 27, Muted, 58, 148, 560, 300);
             body.lineSpacing = 10;
             Fit(body, 23, 27, true);
@@ -181,15 +181,15 @@ namespace StructureBuild.Editor
                 card = Panel("Card", layer, guideSkin); Center(card.rectTransform, 864, 576);
             }
             var content = Content(card.transform, 1080, 720, xr ? 1 : 0.8f);
-            Text("Title", content, "光匣教学关", 52, Paper, 84, 68, 912, 70, true);
+            Text("Title", content, "LUMEN BOX — Tutorial", 52, Paper, 84, 68, 912, 70, true);
             Line(content, 84, 166, 912);
             var body = Text("Body", content,
-                "教学关只需 2 块地面方块\n\n1  指向左侧方块源，按扳机抓取\n2  拖到橙色高亮格，松开后自动吸附\n3  让正面与侧面投影都变成青绿色",
+                "The tutorial requires only 2 ground blocks.\n\n1  Aim at the block source on the left; pull trigger to grab\n2  Drag to an orange highlighted cell; release to snap\n3  Turn both the front and side projections teal",
                 32, Muted, 84, 200, 912, 272);
             body.lineSpacing = 10;
             Fit(body, 27, 32, true);
-            Text("NextArchiveNote", content, "完成后点击下一关，继续后面的档案", 27, Muted, 84, 496, 912, 42);
-            Button(content, "开始练习", StructureUIButtonAction.DismissInstructions, 84, 570, 360, 88, xr, true);
+            Text("NextArchiveNote", content, "Tap Next when done to continue through the archives", 27, Muted, 84, 496, 912, 42);
+            Button(content, "Start Practice", StructureUIButtonAction.DismissInstructions, 84, 570, 360, 88, xr, true);
         }
 
         private static void BuildCompletion(bool xr)
@@ -205,13 +205,13 @@ namespace StructureBuild.Editor
             var card = Panel("Card", layer, guideSkin);
             if (xr) Fill(card.rectTransform); else Center(card.rectTransform, 864, 576);
             var content = Content(card.transform, 1080, 720, xr ? 1 : 0.8f);
-            var title = Text(xr ? "CompletionTitle" : "Title", content, "结构档案完成", 52, Paper, 84, 90, 912, 76, true);
+            var title = Text(xr ? "CompletionTitle" : "Title", content, "Archive Complete", 52, Paper, 84, 90, 912, 76, true);
             Line(content, 84, 206, 912);
-            var detail = Text(xr ? "CompletionDetail" : "Detail", content, "档案 01 已通过双面投影校验", 32, Muted, 84, 252, 912, 76);
+            var detail = Text(xr ? "CompletionDetail" : "Detail", content, "Archive 01 passed dual-projection verification", 32, Muted, 84, 252, 912, 76);
             Fit(detail, 26, 32, true);
-            var progress = Text(xr ? "CompletionProgress" : "Progress", content, "准备进入档案 02", 30, Amber, 84, 380, 912, 52);
+            var progress = Text(xr ? "CompletionProgress" : "Progress", content, "Ready for Archive 02", 30, Amber, 84, 380, 912, 52);
             Fit(progress, 25, 30, false);
-            var label = Button(content, "下一关", StructureUIButtonAction.Continue, 84, 550, 360, 90, xr, true);
+            var label = Button(content, "Next", StructureUIButtonAction.Continue, 84, 550, 360, 90, xr, true);
             var overlay = host.GetComponent<LevelCompleteOverlay>();
             overlay.titleText = title; overlay.detailText = detail; overlay.progressText = progress;
             overlay.continueLabel = label; overlay.combinedPayloadText = null;

@@ -34,11 +34,11 @@ namespace StructureBuild
         {
             RefreshVisibility();
             if (game == null) return;
-            if (levelText != null) levelText.text = $"结构档案 {game.CurrentLevelNumber:00} / {game.TotalLevelCount:00}  ·  {game.CurrentLevelName}";
+            if (levelText != null) levelText.text = $"Archive {game.CurrentLevelNumber:00} / {game.TotalLevelCount:00}  ·  {game.CurrentLevelName}";
             if (ruleText != null) ruleText.text = game.CurrentLevelRule;
             if (statusText != null) statusText.text = game.CurrentStatusText;
-            if (cubeText != null) cubeText.text = $"结构单元  {game.CurrentCubeCount} / {game.CurrentCubeBudget}";
-            if (viewText != null && actions != null && actions.cameraViews != null) viewText.text = $"视角  {actions.cameraViews.CurrentViewName}";
+            if (cubeText != null) cubeText.text = $"Blocks  {game.CurrentCubeCount} / {game.CurrentCubeBudget}";
+            if (viewText != null && actions != null && actions.cameraViews != null) viewText.text = $"View  {actions.cameraViews.CurrentViewName}";
         }
 
         public void RefreshVisibility()

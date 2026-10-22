@@ -21,7 +21,7 @@ namespace StructureBuild.Editor
         [MenuItem("Structure Build/Create Future Tech Scene")]
         public static void CreateScene()
         {
-            if (File.Exists(ScenePath) && !Application.isBatchMode && !EditorUtility.DisplayDialog("重新生成结构构建场景", "这会覆盖现有 StructureBuild.unity。若你已经手工调整过场景，请先备份或取消。", "继续生成", "取消")) return;
+            if (File.Exists(ScenePath) && !Application.isBatchMode && !EditorUtility.DisplayDialog("Regenerate LUMEN BOX Scene", "This will overwrite the existing StructureBuild.unity. If you have made manual adjustments, please back up first or cancel.", "Continue", "Cancel")) return;
             EnsureTextMeshProResources();
             EnsureProjectSettings();
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -157,9 +157,9 @@ namespace StructureBuild.Editor
             canvas.transform.SetParent(parent);
             canvas.transform.localPosition = new Vector3(0, 3.95f, 1.55f);
             canvas.transform.localRotation = Quaternion.Euler(0, 180, 0);
-            game.levelLabel = CreateHudText(canvas.transform, "LevelLabel", "档案 01 / 12", new Vector3(0, 0.22f, 0), 0.17f, new Color(0.65f, 0.95f, 1f));
-            game.statusLabel = CreateHudText(canvas.transform, "StatusLabel", "等待结构输入", new Vector3(0, 0, 0), 0.12f, new Color(0.95f, 0.72f, 0.28f));
-            game.cubeCountLabel = CreateHudText(canvas.transform, "CubeCountLabel", "方块 0 / 3", new Vector3(0, -0.19f, 0), 0.11f, new Color(0.50f, 0.85f, 0.92f));
+            game.levelLabel = CreateHudText(canvas.transform, "LevelLabel", "Archive 01 / 12", new Vector3(0, 0.22f, 0), 0.17f, new Color(0.65f, 0.95f, 1f));
+            game.statusLabel = CreateHudText(canvas.transform, "StatusLabel", "Awaiting structure input", new Vector3(0, 0, 0), 0.12f, new Color(0.95f, 0.72f, 0.28f));
+            game.cubeCountLabel = CreateHudText(canvas.transform, "CubeCountLabel", "Blocks 0 / 3", new Vector3(0, -0.19f, 0), 0.11f, new Color(0.50f, 0.85f, 0.92f));
         }
         private static TMPro.TextMeshPro CreateHudText(Transform parent, string name, string content, Vector3 localPosition, float size, Color color)
         {
@@ -212,7 +212,7 @@ namespace StructureBuild.Editor
         }
         private static void EnsureProjectSettings()
         {
-            EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Android, BuildTarget.Android); PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP); PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64; PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel29; PlayerSettings.Android.applicationEntry = AndroidApplicationEntry.Activity; PlayerSettings.companyName = "Structure Build"; PlayerSettings.productName = "结构构建"; PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.structurebuild.pico"); PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[] { GraphicsDeviceType.OpenGLES3, GraphicsDeviceType.Vulkan });
+            EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Android, BuildTarget.Android); PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP); PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64; PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel29; PlayerSettings.Android.applicationEntry = AndroidApplicationEntry.Activity; PlayerSettings.companyName = "Structure Build"; PlayerSettings.productName = "LUMEN BOX"; PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.structurebuild.pico.en"); PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[] { GraphicsDeviceType.OpenGLES3, GraphicsDeviceType.Vulkan });
             var buildTargetSettings = AssetDatabase.FindAssets("t:XRGeneralSettingsPerBuildTarget"); XRGeneralSettingsPerBuildTarget perTarget = null; if (buildTargetSettings.Length > 0) perTarget = AssetDatabase.LoadAssetAtPath<XRGeneralSettingsPerBuildTarget>(AssetDatabase.GUIDToAssetPath(buildTargetSettings[0])); if (perTarget == null) { perTarget = ScriptableObject.CreateInstance<XRGeneralSettingsPerBuildTarget>(); AssetDatabase.CreateAsset(perTarget, "Assets/XRGeneralSettingsPerBuildTarget.asset"); }
             var general = perTarget.SettingsForBuildTarget(BuildTargetGroup.Android); if (general == null) { general = ScriptableObject.CreateInstance<XRGeneralSettings>(); AssetDatabase.AddObjectToAsset(general, perTarget); var manager = ScriptableObject.CreateInstance<XRManagerSettings>(); AssetDatabase.AddObjectToAsset(manager, perTarget); general.Manager = manager; perTarget.SetSettingsForBuildTarget(BuildTargetGroup.Android, general); }
             general.InitManagerOnStart = true;
