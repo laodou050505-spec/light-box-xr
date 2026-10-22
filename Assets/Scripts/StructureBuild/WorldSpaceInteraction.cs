@@ -98,6 +98,8 @@ namespace StructureBuild
                 {
                     hoveredButton.SetHighlighted(true);
                     game.GetComponent<StructureAudioController>()?.PlayUiHover();
+                    // 悬停轻震：约 0.15 强度、20ms（规范 A）
+                    Pulse(0.15f, 0.02f);
                 }
             }
             var actionHeld = (selectAction.action != null && selectAction.action.IsPressed()) ||

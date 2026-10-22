@@ -17,3 +17,6 @@ identify the source as usable game audio from the service's curated library.
   - https://cdn-ange.holymolly.ai/b/2/b2299d5b-7692-4e26-8922-60f7adeb964a.mp3
 - `bio_ui_soft_02.mp3` - soft synth pad used for undo/reset
   - https://cdn-ange.holymolly.ai/3/b/3b41eab6-18cf-4d5d-870d-ea679f812c6f.mp3
+- `magic_ui_soft_02.mp3` - glass ping click, clear high-frequency strike; used for title START/EXIT press feedback (Optical Archive style)
+  - ange-embed ui_audio collection, point_id: 4b75390c-2ff4-4bc4-8980-943bac15a036
+  - https://cdn-ange.holymolly.ai/d/e/de65a1d6-e05e-45d9-86f5-fdfcd62c1051.mp3

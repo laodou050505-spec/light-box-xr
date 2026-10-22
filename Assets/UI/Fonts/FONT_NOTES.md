@@ -1,23 +1,49 @@
 # Font Notes — LUMEN BOX EN
 
-## StructureBuildLatinSDF.asset
+## 当前已启用字体
 
-- Source font: Arial Unicode MS (Monotype，macOS 系统字体：/System/Library/Fonts/Supplemental/Arial Unicode.ttf)
-- Atlas: 从 StructureBuildChineseSDF.asset 复制（同一源字体 Arial Unicode MS，相同 SDF 参数）
-- 包含字符：A-Z, a-z, 0-9, 空格，以及常用标点，含 · (U+00B7)
-- Atlas 中缺少：! ? ; & — （这些字符未出现在英文游戏文本中）
-- 说明：正式发布前，请在有 Unity 槽位时，用 Unity TMP Generator 从 ArialUnicode.ttf
-  重新生成 StructureBuildLatinSDF.asset（仅含 ASCII + 游戏实际用字），以获得精简的 Latin 图集。
+### Arimo-Regular.ttf（当前 SDF 基础）
 
-## Arial Unicode MS 字体说明
+- 来源：Google Fonts (Apache 2.0)
+- 许可证：LICENSE-Arimo-Apache2.txt
+- 现状：StructureBuildLatinSDF.asset 和 StructureBuildChineseSDF.asset 均引用此字体的 SDF 图集。
 
-Arial Unicode MS 是 Microsoft 授权的 Unicode 多语言字体，随 macOS 附带（系统组件）。
-该字体不可商用分发。游戏 APK 中不包含该字体文件；仅通过 Unity TMP Generator
-提取所需字形生成 SDF 图集（SDF atlas 本身不受字体分发许可约束）。
+## Optical Archive 风格字体组合（2026-10-22 新增，待在 Unity 中生成 SDF）
 
-## 未来优化
+### Cinzel-Regular.ttf / Cinzel-SemiBold.ttf（标题精致衬线体）
 
-在 Unity 槽位可用时：
-1. 将 ArialUnicode.ttf 导入 Unity
-2. 用 Assets/Editor/StructureBuildFontGenerator.cs (待创建) 生成 StructureBuildLatinSDF.asset
-3. 字符集：ASCII + · % × / — 等游戏用符号
+- 来源：Google Fonts — https://fonts.google.com/specimen/Cinzel
+- 作者：The Cinzel Project Authors
+- 许可证：SIL OFL 1.1（LICENSE-OFL.txt）
+- 适用：面板标题、档案编号（Archive 01）、通关标题文字
+- 风格特点：源自罗马古典雕刻铭文风格，大写字母比例优雅，与 Optical Archive 的琥珀玻璃、钢铁框架美学高度吻合
+
+### Jost-Regular.ttf / Jost-Medium.ttf（正文清晰人文无衬线）
+
+- 来源：Google Fonts — https://fonts.google.com/specimen/Jost
+- 作者：The Jost Project Authors (indestructible-type)
+- 许可证：SIL OFL 1.1（LICENSE-OFL.txt）
+- 适用：规则说明、方块计数、状态文字、Controls 面板、底栏按钮标签
+- 风格特点：几何人文无衬线，兼具 Futura 的简洁与 Gill Sans 的可读性，远距 VR 可读性优秀
+
+## SDF 生成说明
+
+编辑器脚本：`Assets/Editor/StructureBuildOpticalFontSetup.cs`
+
+在 Unity 中执行菜单 **Structure Build → Generate Optical SDF Fonts**，将在本目录生成：
+
+- `CinzelRegularSDF.asset`（标题用，atlas 2048×2048，采样 32pt）
+- `CinzelSemiBoldSDF.asset`（强调标题，atlas 2048×2048，采样 32pt）
+- `JostRegularSDF.asset`（正文，atlas 2048×2048，采样 28pt）
+- `JostMediumSDF.asset`（中等强调正文，atlas 2048×2048，采样 28pt）
+
+生成后，在各场景中将相关 TMP 文字组件的 Font Asset 字段从 StructureBuildLatinSDF 替换为对应的新 SDF。
+
+## VR 字高要求（规范 C）
+
+以信息板视距 1.0m 为基准：
+- 标题（Archive 档案编号）：cap height ≥ 28mm（目标 ≥ d × 0.028）
+- 正文（规则、方块计数）：cap height ≥ 17mm（目标 ≥ d × 0.017）
+- 次要文字（说明、单位）：cap height ≥ 12mm（目标 ≥ d × 0.012）
+
+底栏按钮标签（视距约 1.2m）：cap height ≥ 20mm（目标 ≥ 1.2 × 0.017 ≈ 20mm）

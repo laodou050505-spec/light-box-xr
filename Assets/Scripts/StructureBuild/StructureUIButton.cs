@@ -14,12 +14,20 @@ namespace StructureBuild
         public Graphic focusGraphic;
         public Color normalColor = Color.white;
         public Color highlightedColor = new Color(0.78f, 1f, 1f, 1f);
+
+        [Header("Scale Feedback")]
+        [Tooltip("Scale multiplier while hovered (+5%).")]
+        public float hoverScale = 1.05f;
+        [Tooltip("Scale multiplier at peak press (-3%).")]
+        public float pressScale = 0.97f;
+
         private bool highlighted;
         private float pressedUntil;
         private float emphasis;
         private int executedFrame = -1;
         private Canvas ownerCanvas;
         private Collider[] buttonColliders;
+        private Vector3 baseLocalScale;
 
         public bool IsInteractable => isActiveAndEnabled && gameObject.activeInHierarchy &&
             (ownerCanvas == null || ownerCanvas.isActiveAndEnabled);
@@ -30,6 +38,7 @@ namespace StructureBuild
             if (backgroundGraphic == null) backgroundGraphic = GetComponent<Graphic>();
             ownerCanvas = GetComponentInParent<Canvas>();
             buttonColliders = GetComponents<Collider>();
+            baseLocalScale = transform.localScale;
             ApplyColor(normalColor);
             RefreshColliders();
         }
@@ -81,9 +90,26 @@ namespace StructureBuild
             var pressed = Time.unscaledTime < pressedUntil;
             emphasis = Mathf.Lerp(emphasis, highlighted || pressed ? 1 : 0,
                 1 - Mathf.Exp(-16 * Time.unscaledDeltaTime));
-            ApplyColor(Color.Lerp(normalColor, highlightedColor, emphasis));
+
+            // 颜色：按下闪亮琥珀 → 悬停青色 → 常态白
+            if (pressed)
+                ApplyColor(Color.Lerp(new Color(1f, 0.88f, 0.63f, 1f), highlightedColor,
+                    Mathf.Clamp01((Time.unscaledTime - (pressedUntil - 0.18f)) / 0.18f)));
+            else
+                ApplyColor(Color.Lerp(normalColor, highlightedColor, emphasis));
+
+            // 琥珀焦点光晕
             if (focusGraphic != null)
-                focusGraphic.color = new Color(0.94f, 0.82f, 0.61f, emphasis);
+                focusGraphic.color = new Color(0.94f, 0.82f, 0.61f, emphasis * (pressed ? 1.5f : 1f));
+
+            // 缩放反馈：悬停 +5%，按下 -3%
+            float targetScale;
+            if (pressed)
+                targetScale = Mathf.Lerp(pressScale, hoverScale,
+                    Mathf.Clamp01((Time.unscaledTime - (pressedUntil - 0.18f)) / 0.06f));
+            else
+                targetScale = Mathf.Lerp(1f, hoverScale, emphasis);
+            transform.localScale = baseLocalScale * targetScale;
         }
 
         private void LateUpdate() => RefreshColliders();
@@ -103,6 +129,7 @@ namespace StructureBuild
             RefreshColliders();
             ApplyColor(normalColor);
             if (focusGraphic != null) focusGraphic.color = Color.clear;
+            transform.localScale = baseLocalScale;
         }
 
         private void ApplyColor(Color color)

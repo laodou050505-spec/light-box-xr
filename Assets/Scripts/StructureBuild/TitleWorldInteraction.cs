@@ -52,7 +52,12 @@ namespace StructureBuild
             {
                 if (hovered != null) hovered.SetHighlighted(this, false);
                 hovered = button;
-                if (hovered != null) hovered.SetHighlighted(this, true);
+                if (hovered != null)
+                {
+                    hovered.SetHighlighted(this, true);
+                    // 悬停轻震：约 0.15 强度、20ms（规范 A）
+                    device.SendHapticImpulse(0u, 0.15f, 0.02f);
+                }
             }
 
             var pressed = false;
@@ -60,7 +65,8 @@ namespace StructureBuild
             if (pressed && !triggerWasPressed && button != null)
             {
                 button.Execute();
-                device.SendHapticImpulse(0u, 0.22f, 0.05f);
+                // 按下震动：约 0.4 强度、40ms（规范 A）
+                device.SendHapticImpulse(0u, 0.40f, 0.04f);
             }
             triggerWasPressed = pressed;
         }
