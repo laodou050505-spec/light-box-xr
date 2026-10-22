@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 
@@ -86,6 +87,8 @@ namespace StructureBuild
             // in the room so the player can lean and look around it.
             GetComponent<PicoHeadLockedCanvas>()?.CaptureWorldPose();
             panelRoot.SetActive(true);
+            // Polish: brief scale-entrance punch so the card pops open rather than just appearing
+            StartCoroutine(EntrancePunch());
             pendingTextRefreshFrames = 4;
             RefreshTextMeshes();
         }
@@ -120,6 +123,27 @@ namespace StructureBuild
             if (!text.gameObject.activeSelf) text.gameObject.SetActive(true);
             text.SetAllDirty();
             text.ForceMeshUpdate(true, true);
+        }
+
+        // Polish 2026-10-22: scale-punch entrance so the card feels satisfying rather than just appearing
+        private IEnumerator EntrancePunch()
+        {
+            if (panelRoot == null) yield break;
+            var endScale   = panelRoot.transform.localScale;
+            var startScale = endScale * 0.84f;
+            const float duration = 0.20f;
+            panelRoot.transform.localScale = startScale;
+            var elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                // ease-out cubic: fast open, smooth settle
+                var t    = Mathf.Clamp01(elapsed / duration);
+                var ease = 1f - Mathf.Pow(1f - t, 3f);
+                panelRoot.transform.localScale = Vector3.LerpUnclamped(startScale, endScale, ease);
+                yield return null;
+            }
+            panelRoot.transform.localScale = endScale;
         }
     }
 }

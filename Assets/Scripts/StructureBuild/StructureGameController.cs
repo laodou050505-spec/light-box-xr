@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System;
 using System.Linq;
@@ -66,6 +67,8 @@ namespace StructureBuild
         private List<Vector3Int> dragSnapshot;
         private float dragFollowDistance;
         private bool levelCompleted;
+        // Polish 2026-10-22: snap-cell flash timer (seconds remaining)
+        private float snapFlashTimer;
         private readonly Dictionary<Vector2Int, GridAnchor> gridAnchors = new Dictionary<Vector2Int, GridAnchor>();
         private readonly Dictionary<Renderer, Material> projectionMaterials = new Dictionary<Renderer, Material>();
         private float cubeVisualHeight;
@@ -133,6 +136,21 @@ namespace StructureBuild
         {
             HandleDesktopInput();
             UpdateWorldLabels();
+            UpdateSnapFlash();
+        }
+
+        // Polish: keep the drop-indicator emission spike fading between drag updates
+        private void UpdateSnapFlash()
+        {
+            if (snapFlashTimer <= 0f || dropIndicatorMaterial == null) return;
+            snapFlashTimer = Mathf.Max(0f, snapFlashTimer - Time.unscaledDeltaTime);
+            var boost = snapFlashTimer / 0.18f;
+            var flashColor = new Color(0.08f, 1f, 0.72f, 1f) * (1f + boost * 2.0f);
+            if (dropIndicatorMaterial.HasProperty("_EmissionColor"))
+            {
+                dropIndicatorMaterial.EnableKeyword("_EMISSION");
+                dropIndicatorMaterial.SetColor("_EmissionColor", flashColor);
+            }
         }
 
         public void LoadLevel(int index)
@@ -168,7 +186,12 @@ namespace StructureBuild
         {
             if (!IsGameplayInputAllowed || level == null || dragging || levelCompleted || !InBounds(cell) || occupied.Contains(cell) || occupied.Count >= level.cubeLimit || !ProjectionRules.IsSupported(cell, occupied)) return false;
             PushHistory(); occupied.Add(cell); SpawnCube(cell); EvaluateAndDisplay();
-            if (playFeedback) audio?.PlayPlace();
+            if (playFeedback)
+            {
+                audio?.PlayPlace();
+                // Polish: satisfying land bounce on placement
+                if (cubeObjects.TryGetValue(cell, out var landed)) StartCoroutine(CubeLandBounce(landed.transform));
+            }
             return true;
         }
 
@@ -272,6 +295,8 @@ namespace StructureBuild
                 ? CellToWorld(cell) + gridRoot.up * 0.025f
                 : ray.GetPoint(dragFollowDistance);
             var changedCell = valid && (!previousCell.HasValue || previousCell.Value != cell);
+            // Polish: brief emission spike whenever the indicator lands on a new valid cell
+            if (changedCell) snapFlashTimer = 0.18f;
             var smoothing = 1f - Mathf.Exp(-30f * Mathf.Max(Time.unscaledDeltaTime, 0.001f));
             preview.transform.position = changedCell ? target : Vector3.Lerp(preview.transform.position, target, smoothing);
             preview.transform.rotation = Quaternion.Slerp(preview.transform.rotation, gridRoot.rotation, smoothing);
@@ -310,6 +335,8 @@ namespace StructureBuild
                 if (!origin.HasValue || origin.Value != cell) history.Push(snapshot ?? new List<Vector3Int>(occupied));
                 EvaluateAndDisplay();
                 audio?.PlayPlace();
+                // Polish: land bounce on drag commit
+                if (cubeObjects.TryGetValue(cell, out var landed)) StartCoroutine(CubeLandBounce(landed.transform));
                 return true;
             }
 
@@ -391,6 +418,8 @@ namespace StructureBuild
             {
                 levelCompleted = true;
                 HighestCompletedLevel = Mathf.Max(HighestCompletedLevel, CurrentLevelNumber);
+                // Polish: bright teal flash across all projection tiles on completion
+                StartCoroutine(ProjectionCompletionFlash());
                 // Notify before the completion card opens so a guide expiring
                 // at this level is hidden in the very same completion call.
                 CampaignProgressChanged?.Invoke();
@@ -909,6 +938,61 @@ namespace StructureBuild
             }
             return material;
         }
+
+        // ── Polish coroutines (2026-10-22) ──────────────────────────────────────
+
+        /// <summary>Quick scale overshoot when a cube lands on the grid.</summary>
+        private IEnumerator CubeLandBounce(Transform t)
+        {
+            if (t == null) yield break;
+            var baseScale = t.localScale;
+            const float duration = 0.15f;
+            const float overshoot = 0.16f;
+            var elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                var progress = Mathf.Clamp01(elapsed / duration);
+                // sin arch → smooth overshoot that settles back to 1
+                var scale = 1f + overshoot * Mathf.Sin(progress * Mathf.PI) * (1f - progress * 0.55f);
+                if (t != null) t.localScale = baseScale * scale;
+                yield return null;
+            }
+            if (t != null) t.localScale = baseScale;
+        }
+
+        /// <summary>White-to-teal flash across all projection tiles when the level completes.</summary>
+        private IEnumerator ProjectionCompletionFlash()
+        {
+            const float duration = 0.55f;
+            var teal = new Color(0.12f, 1.00f, 0.70f, 1f);
+            var white = new Color(0.88f, 1.00f, 0.94f, 1f);
+            var elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                var t = Mathf.Clamp01(elapsed / duration);
+                // 0→peak at 30% → decay
+                var curve = t < 0.30f ? (t / 0.30f) : 1f - (t - 0.30f) / 0.70f;
+                var intensity = Mathf.Lerp(1.4f, 4.5f, curve);
+                var col = Color.Lerp(teal, white, curve) * intensity;
+                foreach (var kvp in projectionMaterials)
+                {
+                    var mat = kvp.Value;
+                    if (mat == null) continue;
+                    if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", col);
+                    if (mat.HasProperty("_Color"))     mat.SetColor("_Color", col);
+                    if (mat.HasProperty("_EmissionColor"))
+                    {
+                        mat.EnableKeyword("_EMISSION");
+                        mat.SetColor("_EmissionColor", col * 1.8f);
+                    }
+                }
+                yield return null;
+            }
+        }
+
+        // ────────────────────────────────────────────────────────────────────────
 
         private Material GetProjectionMaterial(Renderer renderer)
         {
