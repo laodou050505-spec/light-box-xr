@@ -319,7 +319,7 @@ namespace StructureBuild
                 SpawnCube(origin.Value);
             }
             EvaluateAndDisplay();
-            SetStatus("No valid drop target — block returned");
+            SetStatus("No valid drop target, block returned");
             audio?.PlayReject();
             return false;
         }

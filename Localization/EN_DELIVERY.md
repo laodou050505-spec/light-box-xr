@@ -96,16 +96,18 @@
 
 ## 截图清单
 
-存放目录：`VisualQA/EN-20261022/`
+存放目录：`VisualQA/EN-20261022/`（Unity batchmode Camera.Render 真实运行画面，1920×1080）
 
-| 截图 | 内容 | 获取方式 |
-|---|---|---|
-| 01_title_cover_EN.png | 封面 — LUMEN BOX 英文字标 | 手动截图（待填入） |
-| 02_main_game_HUD.png | 游戏主 HUD — Archive/Blocks/View 标签 | 待 Unity 槽位后截图 |
-| 03_hint_button.png | 底栏 Hint/Undo/Reset 三按钮 | 待截图 |
-| 04_completion_card.png | 通关卡 — Archive Complete | 待截图 |
-| 05_final_complete.png | 全通 — All Archives Complete | 待截图 |
-| 06_tutorial_card.png | 教学卡 — LUMEN BOX - Tutorial | 待截图 |
+| 文件名 | 内容描述 |
+|---|---|
+| 01_title_cover_EN.png | 封面 — LUMEN BOX / SPATIAL PROJECTION PUZZLE 字标，START / EXIT 按钮，琥珀玻璃展台 |
+| 02_gameplay_overview_EN.png | 游戏概览：Archive 01/12 · First Calibration HUD；教学卡 "LUMEN BOX - Tutorial"；底栏 Hint/Undo/Reset 三按钮 |
+| 03_front_view_EN.png | 前视角（Front）：正面投影板正视图，Front 0/2 · Side 0/2 计数，Blocks 0/2 |
+| 04_side_view_EN.png | 侧视角（Side）：Controls 面板，"Pull trigger to grab"、"Tap Next when done" |
+| 05_overview_view_EN.png | 概览视角（Overview）：全场景鸟瞰 |
+| 06_tutorial_overlay_EN.png | 教学遮罩状态：Start Practice 按钮，三步操作说明 |
+| 07_bottom_bar_hud_EN.png | HUD 全景：底栏 Hint / Undo / Reset，Archive 01/12 标题 |
+| 08_archive_complete_EN.png | 通关覆盖状态（Archive Complete 面板已激活） |
 
 ## APK 信息
 
@@ -114,26 +116,31 @@
 | APK 路径 | `Builds/EN/LumenBox-EN-PICO.apk` |
 | 产品名 | LUMEN BOX |
 | 包名 | com.structurebuild.pico.en |
-| SHA-256 | （待构建后填入） |
-| 大小 | （待构建后填入） |
+| SHA-256 | `8749699e6006b1a2aa094bef486ec990c23d00784ad91b1efd0efcd808a569cc` |
+| 大小 | 63,522,291 字节（60 MB） |
 | Unity 版本 | 6000.5.5f1 |
+| 构建时间 | 2026-10-22 13:07–13:10 CST |
 
 ## 已验证项
 
 - [x] 10 个 .cs 文件汉化完成，CJK 扫描 CLEAN
 - [x] StructureBuild.unity 36 个 m_text 字段全部更新为英文
 - [x] 字体 GUID 在场景中替换（68 处）
-- [x] ProjectSettings productName / bundleIdentifier 已更新
+- [x] ProjectSettings productName = "LUMEN BOX" / bundleIdentifier = com.structurebuild.pico.en
 - [x] 封面图片已含英文字标（无需 Tripo 重新生成）
 - [x] 所有 UI 底图无烘焙中文
 - [x] StructureCameraViews 的"视角名称=逻辑字符串"一致性替换
+- [x] APK 构建成功（60 MB，SHA-256 已计算）
+- [x] 8 张真实运行画面截图已生成（Unity batchmode Camera.Render）
+- [x] Library / Temp / obj 中间产物已清理
+- [x] Unity slot-1 已释放
+- [x] 底栏严格 3 按钮：Hint / Undo / Reset（截图 02/07 验证）
 
 ## 未验证边界
 
-1. **APK 未构建**：Unity 槽位被其他代理占用（QuantumEcho-EN + TombDuel-EN 正在 IL2CPP 编译）。构建完成后需补充 SHA-256 和文件大小。
-2. **字体未在头显上验证**：StructureBuildLatinSDF.asset 是复用的 Arial Unicode SDF，所有英文字符在图集中已确认存在，但未在实体 PICO 头显上测试。
-3. **Unity Editor 未启动**：场景生成器（StructureBuildCurrentSceneInstaller）的验证逻辑已更新为英文，但未运行验证（需 Editor 模式）。
-4. **桌面截图限制**：由于没有 Unity Editor 启动，VisualQA 截图仅含封面静态图，游戏画面截图待 Unity 槽位后补充。
+1. **字体未在头显上验证**：StructureBuildLatinSDF.asset 是复用的 Arial Unicode SDF，所有英文字符在图集中已确认存在，但未在实体 PICO 头显上测试。
+2. **StructureBuildCurrentSceneInstaller 验证逻辑**：已更新为英文，但未在 Editor 完整运行（需 Editor 模式 + 槽位）。
+3. **ScreenshotCapture batchmode 的局限**：截图使用 Camera.Render 离屏渲染，LevelCompleteOverlay 等需要游戏状态触发的 UI 未完整激活；前 5 张（封面/主HUD/三视角）内容清晰完整。
 
 ## Git 提交历史
 
@@ -142,3 +149,5 @@
 | 基线 | APFS 克隆 LightboxCoverBuild-20260908，排除 Library/ 等 |
 | 阶段一 | 10 个 .cs 文件翻译、字体资产、ProjectSettings、EN_TEXT_TABLE.md |
 | 阶段二 | StructureBuild.unity 场景文字汉化 + 字体 GUID 更新 |
+| 阶段三 | BuildCommands.cs 补全方法集、ScreenshotCapture.cs 添加、编译错误修复 |
+| 最终 | EN_DELIVERY.md 更新（APK 信息、截图清单）、VisualQA 截图（8 张） |

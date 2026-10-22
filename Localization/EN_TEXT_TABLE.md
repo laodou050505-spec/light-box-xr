@@ -33,7 +33,7 @@
 | status.drag_started | 拖动方块到高亮落点 | Drag block to a highlighted cell | StructureGameController.cs:258 | 开始拖动时状态 | 已翻译 |
 | status.drag_valid | 释放以放置 {x},{y},{z} | Release to place at {x},{y},{z} | StructureGameController.cs:291 | 拖动悬停在有效落点时 | 已翻译 |
 | status.drag_invalid | 将方块移动到棋盘高亮区域 | Move block over a highlighted grid cell | StructureGameController.cs:291 | 拖动悬停在无效区域时 | 已翻译 |
-| status.no_drop | 未命中合法落点，方块已返回 | No valid drop target — block returned | StructureGameController.cs:322 | 释放时没有落点 | 已翻译 |
+| status.no_drop | 未命中合法落点，方块已返回 | No valid drop target, block returned | StructureGameController.cs:322 | 释放时没有落点 | 已翻译（em dash→逗号，避免字体缺字）|
 | status.drag_cancel | 已取消拖动 | Drag cancelled | StructureGameController.cs:338 | 取消拖动时 | 已翻译 |
 | label.level | 档案 {n:00} / {total} · {name} | Archive {n:00} / {total} · {name} | StructureGameController.cs:143 | 关卡标题标签 | 已翻译 |
 | label.cubes | 方块 {count} / {limit} | Blocks {count} / {limit} | StructureGameController.cs:374 | 方块计数标签 | 已翻译 |
@@ -58,7 +58,7 @@
 | btn.start_practice | 开始练习 | Start Practice | StructureBuildOpticalPanels.cs:192 | 教学开始练习按钮 | 已翻译 |
 | panel.guide_title | 操作提示 | Controls | StructureBuildOpticalPanels.cs:156 | 右侧操作提示面板标题 | 已翻译 |
 | panel.guide_body | 1 按扳机抓取左侧方块\n2 拖到橙色格，松开后吸附\n3 让两面投影都变成青绿色\n\n完成后点击下一关 | 1  Pull trigger to grab a block from the left\n2  Drag to an orange cell; release to snap\n3  Turn both projections teal\n\nTap Next when done | StructureBuildOpticalPanels.cs:159 | 右侧操作提示面板正文 | 已翻译 |
-| teaching.title | 光匣教学关 | LUMEN BOX — Tutorial | StructureBuildOpticalPanels.cs:184 | 教学卡标题 | 已翻译 |
+| teaching.title | 光匣教学关 | LUMEN BOX - Tutorial | StructureBuildOpticalPanels.cs:184 | 教学卡标题 | 已翻译（em dash→连字符，避免字体缺字）|
 | teaching.body | 教学关只需 2 块地面方块\n\n1 指向左侧方块源，按扳机抓取\n2 拖到橙色高亮格，松开后自动吸附\n3 让正面与侧面投影都变成青绿色 | The tutorial requires only 2 ground blocks.\n\n1  Aim at the block source on the left; pull trigger to grab\n2  Drag to an orange highlighted cell; release to snap\n3  Turn both the front and side projections teal | StructureBuildOpticalPanels.cs:187 | 教学卡正文 | 已翻译 |
 | teaching.note | 完成后点击下一关，继续后面的档案 | Tap Next when done to continue through the archives | StructureBuildOpticalPanels.cs:191 | 教学卡附注 | 已翻译 |
 | generator.level_label | 结构档案 01 / 12  ·  首次校准 | Archive 01 / 12  ·  First Calibration | StructureBuildOpticalPanels.cs:101 | 生成器默认文本 | 已翻译 |

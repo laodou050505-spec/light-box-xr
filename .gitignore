@@ -1,0 +1,19 @@
+# Unity generated
+Library/
+Temp/
+obj/
+Logs/
+.utmp/
+build/
+*.apk.meta
+
+# Unity crash reports
+Crashes/
+
+# IDE
+.vs/
+*.sln
+*.csproj
+
+# OS
+.DS_Store
