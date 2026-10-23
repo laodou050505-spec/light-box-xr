@@ -160,11 +160,11 @@ namespace StructureBuild.Editor
             Text("Title", content, "Controls", 38, Paper, 58, 48, 560, 54, true);
             Line(content, 58, 120, 560);
             var body = Text("Body", content,
-                "1  Pull trigger to grab a block\n2  Drag to an orange cell, release to snap\n3  Make both projections teal\n\nTap Next when done",
+                "1  Pull trigger to grab a block\n2  Drag to an orange cell to snap\n3  Make both projections teal\n\nTap Next when done",
                 38, Muted, 58, 148, 600, 350);
             body.lineSpacing = 4;
             Fit(body, 35, 42, true);
-            body.margin = new Vector4(8, 0, 8, 0);
+            body.margin = new Vector4(8, 0, 8, 16); // 16px bottom margin keeps last line clear of edge
         }
 
         private static void BuildTeaching(bool xr)
@@ -228,11 +228,21 @@ namespace StructureBuild.Editor
         {
             var rim = Panel(label + "Button", parent, null); Box(rim.rectTransform, x, y, w, h);
             rim.raycastTarget = true;
-            var rest = primary ? Hex(0xD9B471) : ButtonInk;
-            var hover = primary ? Hex(0xF0CD92) : Hex(0x2C405E);
+            // Unified button language: dark navy base + thin amber accent line at bottom.
+            // On hover: amber tint on background + focusGraphic glow (driven by StructureUIButton.Update).
+            // On press: warm amber flash + -3% scale (driven by StructureUIButton.Update).
+            var rest  = primary
+                ? new Color(0.52f, 0.38f, 0.12f, 0.88f)  // deep amber-bronze (primary)
+                : new Color(0.07f, 0.11f, 0.22f, 0.88f);  // dark navy (secondary)
+            var hover = primary
+                ? new Color(1.00f, 0.81f, 0.46f, 0.95f)  // bright amber hover (primary)
+                : new Color(1.00f, 0.79f, 0.43f, 0.40f); // amber glow hover (secondary)
             rim.color = rest;
-            var lower = Panel("FocusLine", rim.transform, null);
-            lower.color = Color.clear; Box(lower.rectTransform, 20, h - 11, w - 40, 3);
+            // Accent underline (4 px amber bar): alpha=0 at rest, driven to amber by focusGraphic logic.
+            var lower = Panel("FocusLine", rim.transform, (Sprite)null);
+            lower.color = new Color(1f, 0.79f, 0.43f, 0f); // start transparent
+            Box(lower.rectTransform, 14, h - 6, w - 28, 4);
+            lower.raycastTarget = false;
             var text = Text("Label", rim.transform, label, label.Length > 2 ? 35 : 38,
                 primary ? Ink : Paper, 20, 16, w - 40, h - 32, true);
             text.alignment = TextAlignmentOptions.Center;

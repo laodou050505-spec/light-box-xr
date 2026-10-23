@@ -101,16 +101,39 @@ namespace StructureBuild.Editor
             if (cam != null)
             {
                 Shoot(cam, "01_mission_readout_dock_EN.png");
-                // Controls 面板可见时截图
-                var controlsPanel = FindObjectByName("ControlsPanel") ?? FindObjectByName("Controls");
+
+                // Controls 面板 (02): 找到 "GuidePanel"（BuildGuide 的实际对象名），
+                // 若在 PicoQuickGuide / DesktopHUD 下则先激活父级再找。
+                var controlsPanel = FindObjectByName("GuidePanel");
+                if (controlsPanel == null)
+                {
+                    var picoHost = FindObjectByName("PicoQuickGuide");
+                    if (picoHost != null) { var t = picoHost.transform.Find("GuidePanel"); if (t != null) controlsPanel = t.gameObject; }
+                }
+                if (controlsPanel == null)
+                {
+                    var deskHost = FindObjectByName("DesktopHUD");
+                    if (deskHost != null) { var t = deskHost.transform.Find("GuidePanel"); if (t != null) controlsPanel = t.gameObject; }
+                }
+                bool controlsWasActive = controlsPanel != null && controlsPanel.activeSelf;
                 if (controlsPanel != null) controlsPanel.SetActive(true);
+                Canvas.ForceUpdateCanvases();
                 Shoot(cam, "02_controls_panel_EN.png");
-                if (controlsPanel != null) controlsPanel.SetActive(false);
-                // Archive Complete 面板
-                var completePanel = FindObjectByName("CompletionPanel") ?? FindObjectByName("ArchiveCompletePanel");
-                if (completePanel != null) completePanel.SetActive(true);
+                if (controlsPanel != null) controlsPanel.SetActive(controlsWasActive);
+
+                // Archive Complete 面板 (03): 找到 CompletionOverlay_Desktop 或 CompletionOverlay_Pico，
+                // 激活其 Layer 子级以显示 Card 内容。
+                var completeHost = FindObjectByName("CompletionOverlay_Desktop") ?? FindObjectByName("CompletionOverlay_Pico");
+                bool completeWasActive = completeHost != null && completeHost.activeSelf;
+                if (completeHost != null)
+                {
+                    completeHost.SetActive(true);
+                    var layer = completeHost.transform.Find("Layer");
+                    if (layer != null) layer.gameObject.SetActive(true);
+                }
+                Canvas.ForceUpdateCanvases();
                 Shoot(cam, "03_archive_complete_panel_EN.png");
-                if (completePanel != null) completePanel.SetActive(false);
+                if (completeHost != null) completeHost.SetActive(completeWasActive);
             }
 
             // 2e. 规范 C 字高测量
@@ -128,22 +151,26 @@ namespace StructureBuild.Editor
                 try { StructureBuildTitleSceneInstaller.ApplyToLoadedScene(); }
                 catch (Exception ex) { Debug.LogError("[FontAudioApply] TitleSceneInstaller.ApplyToLoadedScene failed: " + ex.Message); }
 
-                // 标题场景没有 TMP 文字（字母烘焙在封面图里），不需要字体覆盖
-                // OverrideAllTmpFonts() call intentionally omitted for title scene
-
-                // 更新字体路径引用（为了让 ValidateTitleScene 通过 TextMeshProUGUI.Length == 0）
-                // 直接确认没有 TMP 对象即可
+                // 标题场景现在有 2 个 TMP 标签（STARTLabel / EXITLabel，Cinzel SemiBold）。
+                // 它们由 CreateArtworkButton 直接以 CinzelSemiBoldSDF 创建，不需要 OverrideTitleFonts。
                 var tmpInTitle = UnityEngine.Object.FindObjectsByType<TextMeshProUGUI>(FindObjectsInactive.Include);
-                Debug.Log($"[FontAudioApply] Title scene TMP count: {tmpInTitle.Length}");
+                Debug.Log($"[FontAudioApply] Title scene TMP count: {tmpInTitle.Length} (expected 2: STARTLabel, EXITLabel)");
 
-                // 封面截图：手动把视觉状态设到 hover/press 再渲染
+                // 封面截图：先拍常态 (00c)，再 hover (00)，再 press (00b)
                 var titleCam = FindEditModeCamera();
                 if (titleCam != null)
                 {
+                    // 00c: 常态封面（无悬停）
+                    ResetTitleButtonStates();
+                    Canvas.ForceUpdateCanvases();
+                    Shoot(titleCam, "00c_cover_normal_EN.png");
+
+                    // 00: START 悬停态
                     ApplyTitleButtonState(StructureTitleButtonAction.Start, ButtonVisualState.Hover);
                     Canvas.ForceUpdateCanvases();
                     Shoot(titleCam, "00_cover_start_hover_EN.png");
 
+                    // 00b: START 按下态
                     ApplyTitleButtonState(StructureTitleButtonAction.Start, ButtonVisualState.Press);
                     Canvas.ForceUpdateCanvases();
                     Shoot(titleCam, "00b_cover_start_press_EN.png");
@@ -498,34 +525,38 @@ namespace StructureBuild.Editor
                 if (Mathf.Abs(baseScale.x - 1.05f) < 0.01f || Mathf.Abs(baseScale.x - 0.97f) < 0.01f)
                     baseScale = Vector3.one;
 
+                // Text colours mirror StructureTitleButton static fields.
+                var labelNormal = new Color(0.87f, 0.94f, 1.00f, 1f); // ice white
+                var labelHover  = new Color(0.082f, 0.102f, 0.20f, 1f); // #141A33 dark navy
+
                 switch (state)
                 {
                     case ButtonVisualState.Hover:
-                        // 与运行时 StructureTitleButton.Update() 相同的逻辑：
-                        // 保证截图里看到的效果和玩家在头显里看到的一致。
+                        // Mirror StructureTitleButton.Update() at emphasis=1 for screenshot fidelity.
                         if (btn.graphic != null)
                         {
-                            // 背景 +25% 亮度
                             var hc = btn.highlightedColor;
                             btn.graphic.color = new Color(Mathf.Min(hc.r * 1.25f, 1f), Mathf.Min(hc.g * 1.25f, 1f), Mathf.Min(hc.b * 1.25f, 1f), hc.a);
                         }
-                        // 外发光 Image（预先放在按钮后面的兄弟节点）
                         if (btn.glowImage != null)
                             btn.glowImage.color = new Color(btn.focusColor.r, btn.focusColor.g, btn.focusColor.b, 0.55f);
-                        if (btn.focusGraphic != null)
-                            btn.focusGraphic.color = btn.focusColor;  // 下划线 amber
-                        if (btn.focusLine != null)
-                            btn.focusLine.localScale = Vector3.one;   // 完全展开
-                        btn.transform.localScale = baseScale * btn.hoverScale; // 1.05x
-                        break;
-                    case ButtonVisualState.Press:
-                        if (btn.graphic != null)
-                            btn.graphic.color = new Color(1f, 0.88f, 0.63f, 0.35f); // warm amber flash
                         if (btn.focusGraphic != null)
                             btn.focusGraphic.color = btn.focusColor;
                         if (btn.focusLine != null)
                             btn.focusLine.localScale = Vector3.one;
-                        btn.transform.localScale = baseScale * btn.pressScale; // 0.97x
+                        // Dark navy text for contrast against amber hover background (≥4.5:1).
+                        if (btn.labelText != null) btn.labelText.color = labelHover;
+                        btn.transform.localScale = baseScale * btn.hoverScale;
+                        break;
+                    case ButtonVisualState.Press:
+                        if (btn.graphic != null)
+                            btn.graphic.color = new Color(1f, 0.88f, 0.63f, 0.35f);
+                        if (btn.focusGraphic != null)
+                            btn.focusGraphic.color = btn.focusColor;
+                        if (btn.focusLine != null)
+                            btn.focusLine.localScale = Vector3.one;
+                        if (btn.labelText != null) btn.labelText.color = labelHover;
+                        btn.transform.localScale = baseScale * btn.pressScale;
                         break;
                     default:
                         if (btn.graphic != null)
@@ -534,6 +565,7 @@ namespace StructureBuild.Editor
                             btn.focusGraphic.color = Color.clear;
                         if (btn.focusLine != null)
                             btn.focusLine.localScale = new Vector3(0.16f, 1f, 1f);
+                        if (btn.labelText != null) btn.labelText.color = labelNormal;
                         btn.transform.localScale = baseScale;
                         break;
                 }
@@ -544,15 +576,17 @@ namespace StructureBuild.Editor
         private static void ResetTitleButtonStates()
         {
             var buttons = UnityEngine.Object.FindObjectsByType<StructureTitleButton>(FindObjectsInactive.Include);
+            var labelNormal = new Color(0.87f, 0.94f, 1.00f, 1f); // ice white
             foreach (var btn in buttons)
             {
                 var baseScale = btn.transform.localScale;
                 if (Mathf.Abs(baseScale.x - 1.05f) < 0.01f || Mathf.Abs(baseScale.x - 0.97f) < 0.01f)
                     baseScale = Vector3.one;
                 if (btn.graphic != null) btn.graphic.color = btn.normalColor;
-                if (btn.glowImage != null) btn.glowImage.color = Color.clear; // 外发光归零
+                if (btn.glowImage != null) btn.glowImage.color = Color.clear;
                 if (btn.focusGraphic != null) btn.focusGraphic.color = Color.clear;
                 if (btn.focusLine != null) btn.focusLine.localScale = new Vector3(0.16f, 1f, 1f);
+                if (btn.labelText != null) btn.labelText.color = labelNormal;
                 btn.transform.localScale = baseScale;
                 EditorUtility.SetDirty(btn);
             }

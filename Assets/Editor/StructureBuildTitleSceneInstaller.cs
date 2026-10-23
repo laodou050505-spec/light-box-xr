@@ -25,6 +25,12 @@ namespace StructureBuild.Editor
         private const string TitlePanelSkinPath = "Assets/UI/Generated/Polish-20261022/01_generated_image_url.png";
         private const string TitleCoverFeatherMaterialPath = "Assets/UI/TitleCoverFeather.mat";
         private const string TitleCoverFeatherShaderPath = "Assets/Shaders/TitleCoverFeather.shader";
+        // Tripo banana2 generated button backgrounds.
+        // START  (task a46588c6, 4:1 wide baroque frame + amber glow)
+        // EXIT   (task f4d27a22, 16:9 compact baroque frame + amber glow)
+        private const string ButtonBgStartSpritePath = "Assets/UI/GeneratedArt/ButtonBG/01_generated_image_url.png";
+        private const string ButtonBgExitSpritePath  = "Assets/UI/GeneratedArt/ButtonBG/02_exit_button_bg.png";
+        private const string CinzelSemiBoldSdfPath = "Assets/UI/Fonts/CinzelSemiBoldSDF.asset";
         public const float TitleViewingDistance = 3.45f;
 
         private static readonly Color Ink = new Color(0.002f, 0.010f, 0.022f, 1f);
@@ -115,8 +121,9 @@ namespace StructureBuild.Editor
                     AssetDatabase.GetAssetPath(titleFrame.sprite) == TitlePanelSkinPath &&
                     featherMaterial != null && titleFrame.material == featherMaterial &&
                     Find("TitleCover")?.GetComponent<Image>()?.material == featherMaterial &&
-                    FindObjects<TextMeshProUGUI>().Length == 0,
-                "Generated title lettering must be preserved without duplicate Unity text, with the persisted feather material.");
+                    FindObjects<TextMeshProUGUI>().Length == 2 &&
+                    FindObjects<TextMeshProUGUI>().All(t => t.name == "STARTLabel" || t.name == "EXITLabel"),
+                "Title must use Tripo-generated button frames with exactly two Cinzel labels (STARTLabel, EXITLabel) and no other TMP text; feather material must be applied.");
             var coverTransform = Find("TitleCover")?.transform;
             var expectedCoverY = start.DesignedEyePosition.y - 0.10f;
             Require(coverTransform != null && Mathf.Abs(coverTransform.position.y - expectedCoverY) < 0.01f &&
@@ -132,8 +139,8 @@ namespace StructureBuild.Editor
                 "Cover geometry must use source artwork aspect for aligned button targets.");
             var buttons = FindObjects<StructureTitleButton>();
             Require(buttons.Length == 2 && buttons.All(button => button.focusLine != null && button.focusGraphic != null &&
-                    button.normalColor.a == 0f && button.GetComponent<BoxCollider>() != null),
-                "The two baked labels need transparent hit areas and visible focus feedback.");
+                    button.glowImage != null && button.labelText != null && button.GetComponent<BoxCollider>() != null),
+                "START and EXIT buttons must have focusLine, focusGraphic, glowImage, labelText TMP label, and BoxCollider.");
             Require(FindObjects<StructureGameController>().Length == 0 && FindObjects<StructureHUDController>().Length == 0 &&
                     FindObjects<GameplayInstructionsOverlay>().Length == 0 && FindObjects<PicoHeadLockedCanvas>().Length == 0 &&
                     Find("PuzzleTable_Editable") == null && Find("GameplayPresentation_v2") == null,
@@ -213,9 +220,9 @@ namespace StructureBuild.Editor
 
             // Bounds measured on the generated artwork, normalized from top left.
             CreateArtworkButton("START", inner.transform, artSize, new Rect(0.079f, 0.678f, 0.366f, 0.067f),
-                title, StructureTitleButtonAction.Start, new Color(1f, 0.79f, 0.43f));
+                title, StructureTitleButtonAction.Start, new Color(1f, 0.79f, 0.43f), ButtonBgStartSpritePath);
             CreateArtworkButton("EXIT", inner.transform, artSize, new Rect(0.080f, 0.777f, 0.121f, 0.066f),
-                title, StructureTitleButtonAction.Exit, new Color(0.79f, 0.88f, 1f));
+                title, StructureTitleButtonAction.Exit, new Color(0.79f, 0.88f, 1f), ButtonBgExitSpritePath);
         }
 
         /// <summary>Applies the persisted feather material and upright cover pose to an already loaded title scene.</summary>
@@ -255,6 +262,8 @@ namespace StructureBuild.Editor
             // Ensure each button has its GlowBg sibling Image for the hover glow effect.
             // Safe to call on existing scenes: it recreates the glow sibling when missing.
             RefreshButtonGlows();
+            // Ensure each button has the Tripo-generated background sprite and Cinzel TMP label.
+            RefreshButtonArtAndLabels();
             EditorSceneManager.MarkSceneDirty(scene);
             AssetDatabase.SaveAssets();
         }
@@ -292,6 +301,73 @@ namespace StructureBuild.Editor
                 btn.glowImage = img;
                 EditorUtility.SetDirty(btn);
                 Debug.Log($"[TitleSceneInstaller] RefreshButtonGlows: created {go.name} for {btn.name}");
+            }
+        }
+
+        /// <summary>
+        /// Applies the Tripo banana2 button background sprite and Cinzel TMP label to
+        /// existing StructureTitleButton objects that were built before this feature was added.
+        /// Called from ApplyToLoadedScene() so incremental runs stay up to date.
+        /// </summary>
+        private static void RefreshButtonArtAndLabels()
+        {
+            var cinzelFont = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(CinzelSemiBoldSdfPath);
+            var startSprite = LoadPanelSprite(ButtonBgStartSpritePath);
+            var exitSprite  = LoadPanelSprite(ButtonBgExitSpritePath);
+
+            var buttons = UnityEngine.Object.FindObjectsByType<StructureTitleButton>(FindObjectsInactive.Include);
+            foreach (var btn in buttons)
+            {
+                bool isStart = btn.action == StructureTitleButtonAction.Start;
+                var bgSprite = isStart ? startSprite : exitSprite;
+                var labelName = btn.name + "Label"; // "STARTLabel" / "EXITLabel"
+
+                // ── Background sprite ────────────────────────────────────────
+                var img = btn.GetComponent<Image>();
+                if (img != null && bgSprite != null && img.sprite != bgSprite)
+                {
+                    img.sprite = bgSprite;
+                    img.type = Image.Type.Simple;
+                    img.preserveAspect = false;
+                    img.color = Color.white;
+                    btn.normalColor = Color.white;
+                    // Accent colour for hover tint matches the focusColor (amber for START, ice for EXIT).
+                    btn.highlightedColor = new Color(btn.focusColor.r, btn.focusColor.g, btn.focusColor.b, 1f);
+                    EditorUtility.SetDirty(btn);
+                    Debug.Log($"[TitleSceneInstaller] RefreshButtonArtAndLabels: sprite set on {btn.name}");
+                }
+
+                // ── Cinzel TMP label ─────────────────────────────────────────
+                if (btn.labelText == null)
+                {
+                    // Look for an existing child label first.
+                    var existingLabel = btn.transform.Find(labelName);
+                    if (existingLabel != null)
+                    {
+                        btn.labelText = existingLabel.GetComponent<TextMeshProUGUI>();
+                    }
+                    else
+                    {
+                        var labelObj = new GameObject(labelName, typeof(RectTransform), typeof(TextMeshProUGUI));
+                        labelObj.transform.SetParent(btn.transform, false);
+                        var r = labelObj.GetComponent<RectTransform>();
+                        r.anchorMin = Vector2.zero; r.anchorMax = Vector2.one;
+                        r.offsetMin = Vector2.zero; r.offsetMax = Vector2.zero;
+                        var tmp = labelObj.GetComponent<TextMeshProUGUI>();
+                        tmp.font = cinzelFont ?? TMP_Settings.defaultFontAsset;
+                        tmp.text = btn.name;  // "START" or "EXIT"
+                        tmp.fontSize = isStart ? 52f : 46f;
+                        tmp.color = new Color(0.87f, 0.94f, 1f, 1f); // ice white normal state
+                        tmp.fontStyle = FontStyles.Normal;
+                        tmp.alignment = TextAlignmentOptions.Center;
+                        tmp.textWrappingMode = TextWrappingModes.NoWrap;
+                        tmp.overflowMode = TextOverflowModes.Ellipsis;
+                        tmp.raycastTarget = false;
+                        btn.labelText = tmp;
+                        EditorUtility.SetDirty(btn);
+                        Debug.Log($"[TitleSceneInstaller] RefreshButtonArtAndLabels: created {labelName}");
+                    }
+                }
             }
         }
 
@@ -359,37 +435,72 @@ namespace StructureBuild.Editor
         }
 
         private static void CreateArtworkButton(string name, Transform parent, Vector2 artSize, Rect uv,
-            StructureTitleController title, StructureTitleButtonAction action, Color accent)
+            StructureTitleController title, StructureTitleButtonAction action, Color accent, string bgSpritePath)
         {
             var size = new Vector2(uv.width * artSize.x, uv.height * artSize.y);
             var position = new Vector2((uv.center.x - 0.5f) * artSize.x, (0.5f - uv.center.y) * artSize.y);
-            var button = Panel(name, parent, Color.clear);
+
+            // ── Outer glow sibling (rendered BEHIND button) ─────────────────
+            // Sized 24 px larger on each side so the amber glow spills outside the button frame.
+            // Must be created before the button so it sits at a lower sibling index.
+            var glow = Panel(name + "Glow", parent, Color.clear);
+            SetRect(glow.rectTransform, Vector2.one * 0.5f, Vector2.one * 0.5f, position, size + new Vector2(24f, 24f));
+            glow.raycastTarget = false;
+
+            // ── Button background image (Tripo banana2 designed frame) ──────
+            var bgSprite = LoadPanelSprite(bgSpritePath);
+            var button = Panel(name, parent, bgSprite != null ? Color.white : new Color(0.08f, 0.10f, 0.20f, 0.88f));
+            if (bgSprite != null)
+            {
+                button.sprite = bgSprite;
+                button.type = Image.Type.Simple;
+                button.preserveAspect = false;
+            }
             SetRect(button.rectTransform, Vector2.one * 0.5f, Vector2.one * 0.5f, position, size);
             var collider = button.gameObject.AddComponent<BoxCollider>();
             collider.size = new Vector3(size.x + 14f, size.y + 14f, 16f);
+
+            // ── Button behaviour ─────────────────────────────────────────────
             var behavior = button.gameObject.AddComponent<StructureTitleButton>();
             behavior.title = title;
             behavior.action = action;
             behavior.graphic = button;
-            behavior.normalColor = Color.clear;
-            behavior.highlightedColor = new Color(accent.r, accent.g, accent.b, 0.20f);
+            // normalColor = white so the designed background sprite shows at full brightness.
+            // highlightedColor = accent so the sprite tints warm amber on hover.
+            behavior.normalColor = bgSprite != null ? Color.white : new Color(0.08f, 0.10f, 0.20f, 0.88f);
+            behavior.highlightedColor = new Color(accent.r, accent.g, accent.b, 1f);
             behavior.focusColor = accent;
+            behavior.glowImage = glow;
+
+            // Focus underline below the button
             var underline = Panel("FocusUnderline", button.transform, Color.clear);
             SetRect(underline.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, -5f), new Vector2(size.x - 12f, 3f));
             underline.raycastTarget = false;
             behavior.focusLine = underline.rectTransform;
             behavior.focusGraphic = underline;
 
-            // Outer glow: a sibling Image placed BEFORE the button in render order
-            // (lower sibling index = rendered behind). Sized 24 px larger on each side
-            // so the amber glow spills visibly outside the baked text boundary.
-            // StructureTitleButton.glowImage drives its alpha at runtime.
-            var glow = Panel(name + "Glow", parent, Color.clear);
-            SetRect(glow.rectTransform, Vector2.one * 0.5f, Vector2.one * 0.5f, position, size + new Vector2(24f, 24f));
-            glow.raycastTarget = false;
-            // Move glow to the sibling index just before the button so it renders behind it.
-            glow.transform.SetSiblingIndex(button.transform.GetSiblingIndex());
-            behavior.glowImage = glow;
+            // ── TMP text label (Cinzel SemiBold, all-caps) ─────────────────
+            // Name contains "start"/"exit" → OverrideTitleFonts() assigns CinzelSemiBold automatically.
+            var labelName = name + "Label"; // "STARTLabel" or "EXITLabel"
+            var labelObj = new GameObject(labelName, typeof(RectTransform), typeof(TextMeshProUGUI));
+            labelObj.transform.SetParent(button.transform, false);
+            var labelRect = labelObj.GetComponent<RectTransform>();
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = Vector2.zero;
+            labelRect.offsetMax = Vector2.zero;
+            var labelTmp = labelObj.GetComponent<TextMeshProUGUI>();
+            var cinzelFont = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(CinzelSemiBoldSdfPath);
+            labelTmp.font = cinzelFont ?? TMP_Settings.defaultFontAsset;
+            labelTmp.text = name; // "START" or "EXIT" — Cinzel renders in true small-caps
+            labelTmp.fontSize = name == "START" ? 52f : 46f;
+            labelTmp.color = new Color(0.87f, 0.94f, 1f, 1f); // ice-white for normal state
+            labelTmp.fontStyle = FontStyles.Normal;
+            labelTmp.alignment = TextAlignmentOptions.Center;
+            labelTmp.textWrappingMode = TextWrappingModes.NoWrap;
+            labelTmp.overflowMode = TextOverflowModes.Ellipsis;
+            labelTmp.raycastTarget = false;
+            behavior.labelText = labelTmp;
         }
 
         private static Image Panel(string name, Transform parent, Color color)

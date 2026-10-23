@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -32,6 +33,15 @@ namespace StructureBuild
                  "Assign via StructureBuildTitleSceneInstaller; must be a sibling of this object's Transform.")]
         public Graphic glowImage;
 
+        [Tooltip("TMP text label overlaid on the button (e.g. START, EXIT in Cinzel). " +
+                 "Color switches from ice-white on normal state to dark navy (#141A33) on hover " +
+                 "so the text stays legible against the amber highlight background.")]
+        public TextMeshProUGUI labelText;
+
+        // Text colours: light on dark background (normal), dark on amber background (hover/press).
+        private static readonly Color LabelNormalColor = new Color(0.87f, 0.94f, 1.00f, 1f); // ice white
+        private static readonly Color LabelHoverColor  = new Color(0.082f, 0.102f, 0.20f, 1f); // #141A33 dark navy
+
         [Header("Scale Feedback (Optical Archive)")]
         [Tooltip("Scale multiplier while hovered (e.g. 1.05 = +5%).")]
         public float hoverScale = 1.05f;
@@ -53,6 +63,7 @@ namespace StructureBuild
             if (graphic != null) graphic.color = normalColor;
             if (focusGraphic != null) focusGraphic.color = Color.clear;
             if (glowImage != null) glowImage.color = Color.clear;
+            if (labelText != null) labelText.color = LabelNormalColor;
             baseLocalScale = transform.localScale;
         }
 
@@ -109,6 +120,10 @@ namespace StructureBuild
                 glowImage.color = new Color(focusColor.r, focusColor.g, focusColor.b,
                     Mathf.Clamp01(emphasis * 0.55f));
 
+            // Button label: light ice-white at rest, dark navy on hover for contrast against amber bg.
+            if (labelText != null)
+                labelText.color = Color.Lerp(LabelNormalColor, LabelHoverColor, emphasis);
+
             // Focus underline — amber, brightened during hover.
             if (focusGraphic != null)
             {
@@ -139,6 +154,7 @@ namespace StructureBuild
             if (graphic != null) graphic.color = normalColor;
             if (focusGraphic != null) focusGraphic.color = Color.clear;
             if (glowImage != null) glowImage.color = Color.clear;
+            if (labelText != null) labelText.color = LabelNormalColor;
             transform.localScale = baseLocalScale;
         }
     }
