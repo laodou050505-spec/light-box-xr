@@ -34,13 +34,15 @@ namespace StructureBuild
         public Graphic glowImage;
 
         [Tooltip("TMP text label overlaid on the button (e.g. START, EXIT in Cinzel). " +
-                 "Color switches from ice-white on normal state to dark navy (#141A33) on hover " +
-                 "so the text stays legible against the amber highlight background.")]
+                 "The engraved silver frame keeps a dark navy interior in every state, so the label " +
+                 "stays light: ice-white at rest, warm gold-white on hover/press.")]
         public TextMeshProUGUI labelText;
 
-        // Text colours: light on dark background (normal), dark on amber background (hover/press).
-        private static readonly Color LabelNormalColor = new Color(0.87f, 0.94f, 1.00f, 1f); // ice white
-        private static readonly Color LabelHoverColor  = new Color(0.082f, 0.102f, 0.20f, 1f); // #141A33 dark navy
+        // 按钮底图是深藏青内衬的雕花银框，各状态文字都保持浅色：常态冰白，悬停/按下暖金白。
+        public static readonly Color LabelNormalColor = new Color(0.87f, 0.94f, 1.00f, 1f); // ice white
+        public static readonly Color LabelHoverColor  = new Color(1.00f, 0.91f, 0.70f, 1f); // warm gold-white
+        // 按下瞬间整块提亮到接近原图亮度（常态略压暗，所以这里能看出闪亮）
+        private static readonly Color PressFlashColor = new Color(1.00f, 0.96f, 0.86f, 1f);
 
         [Header("Scale Feedback (Optical Archive)")]
         [Tooltip("Scale multiplier while hovered (e.g. 1.05 = +5%).")]
@@ -97,53 +99,56 @@ namespace StructureBuild
             emphasis = Mathf.Lerp(emphasis, hovered || pressed ? 1f : 0f,
                 1f - Mathf.Exp(-14f * Time.unscaledDeltaTime));
 
-            // Colour: press flash → warm amber, hover → highlighted (+25% brightness), idle → normal.
+            var pressT = pressed ? Mathf.Clamp01((Time.unscaledTime - (pressedUntil - 0.18f)) / 0.18f) : 1f;
+            ApplyVisual(emphasis, pressed, pressT);
+
+            wasHovered = hovered;
+        }
+
+        /// <summary>
+        /// Applies the visual state. emphasis: 0 = idle, 1 = hovered. pressT: 0 at the moment of the
+        /// press, 1 when the flash has settled. Also used by editor screenshot tools so captures match runtime.
+        /// </summary>
+        public void ApplyVisual(float emphasisValue, bool pressed, float pressT)
+        {
+            if (baseLocalScale == Vector3.zero) baseLocalScale = transform.localScale;
+
+            // Colour: press flash → near full brightness, hover → highlighted (+25% brightness), idle → normal.
             if (graphic != null)
             {
-                if (pressed)
-                    graphic.color = Color.Lerp(new Color(1f, 0.88f, 0.63f, 0.35f), normalColor, Mathf.Clamp01((Time.unscaledTime - (pressedUntil - 0.18f)) / 0.18f));
-                else
-                {
-                    // +25% brightness on hover makes the background visibly lighter in the headset.
-                    var brightHighlight = new Color(
-                        Mathf.Min(highlightedColor.r * 1.25f, 1f),
-                        Mathf.Min(highlightedColor.g * 1.25f, 1f),
-                        Mathf.Min(highlightedColor.b * 1.25f, 1f),
-                        highlightedColor.a);
-                    graphic.color = Color.Lerp(normalColor, brightHighlight, emphasis);
-                }
+                var brightHighlight = new Color(
+                    Mathf.Min(highlightedColor.r * 1.25f, 1f),
+                    Mathf.Min(highlightedColor.g * 1.25f, 1f),
+                    Mathf.Min(highlightedColor.b * 1.25f, 1f),
+                    highlightedColor.a);
+                var settled = Color.Lerp(normalColor, brightHighlight, emphasisValue);
+                graphic.color = pressed ? Color.Lerp(PressFlashColor, settled, pressT) : settled;
             }
 
-            // Outer glow image: amber, fades in on hover. Sized 24 px larger than the button on each
-            // side (placed as a sibling behind this button) so the glow spills outside the hit area.
+            // Outer glow image: soft amber halo sprite, fades in on hover, peaks on press.
             if (glowImage != null)
                 glowImage.color = new Color(focusColor.r, focusColor.g, focusColor.b,
-                    Mathf.Clamp01(emphasis * 0.55f));
+                    Mathf.Clamp01(emphasisValue * 0.55f + (pressed ? (1f - pressT) * 0.35f : 0f)));
 
-            // Button label: light ice-white at rest, dark navy on hover for contrast against amber bg.
             if (labelText != null)
-                labelText.color = Color.Lerp(LabelNormalColor, LabelHoverColor, emphasis);
+                labelText.color = Color.Lerp(LabelNormalColor, LabelHoverColor, pressed ? 1f : emphasisValue);
 
             // Focus underline — amber, brightened during hover.
             if (focusGraphic != null)
             {
-                var glowAlpha = emphasis * (pressed ? 1.6f : 1f);
+                var glowAlpha = emphasisValue * (pressed ? 1.6f : 1f);
                 focusGraphic.color = new Color(focusColor.r, focusColor.g, focusColor.b, Mathf.Min(glowAlpha, 1f));
             }
 
             // Focus underline scale sweep.
             if (focusLine != null)
-                focusLine.localScale = new Vector3(Mathf.Lerp(0.16f, 1f, emphasis), 1f, 1f);
+                focusLine.localScale = new Vector3(Mathf.Lerp(0.16f, 1f, emphasisValue), 1f, 1f);
 
             // Scale feedback: hover grows, press sinks back.
-            float targetScale;
-            if (pressed)
-                targetScale = Mathf.Lerp(pressScale, hoverScale, Mathf.Clamp01((Time.unscaledTime - (pressedUntil - 0.18f)) / 0.06f));
-            else
-                targetScale = Mathf.Lerp(1f, hoverScale, emphasis);
+            float targetScale = pressed
+                ? Mathf.Lerp(pressScale, hoverScale, Mathf.Clamp01(pressT * 3f))
+                : Mathf.Lerp(1f, hoverScale, emphasisValue);
             transform.localScale = baseLocalScale * targetScale;
-
-            wasHovered = hovered;
         }
 
         private void OnDisable()

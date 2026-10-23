@@ -28,8 +28,13 @@ namespace StructureBuild.Editor
         // Tripo banana2 generated button backgrounds.
         // START  (task a46588c6, 4:1 wide baroque frame + amber glow)
         // EXIT   (task f4d27a22, 16:9 compact baroque frame + amber glow)
-        private const string ButtonBgStartSpritePath = "Assets/UI/GeneratedArt/ButtonBG/01_generated_image_url.png";
-        private const string ButtonBgExitSpritePath  = "Assets/UI/GeneratedArt/ButtonBG/02_exit_button_bg.png";
+        // 总控 v3：从上述生成图裁出雕花银框，三段拉伸到按钮宽高比并抠成真透明（/tmp/lumen_buttons.py 同款流程）。
+        public const string ButtonBgStartSpritePath = "Assets/UI/GeneratedArt/ButtonBG/LumenButton_Start_Frame.png";
+        public const string ButtonBgExitSpritePath  = "Assets/UI/GeneratedArt/ButtonBG/LumenButton_Exit_Frame.png";
+        public const string ButtonGlowSpritePath    = "Assets/UI/GeneratedArt/ButtonBG/LumenButton_Glow.png";
+        // 雕花框常态略压暗，悬停提亮并偏暖，按下闪到原图亮度
+        public static readonly Color ButtonFrameNormal = new Color(0.84f, 0.86f, 0.92f, 1f);
+        public static readonly Color ButtonFrameHighlight = new Color(0.96f, 0.86f, 0.70f, 1f);
         private const string CinzelSemiBoldSdfPath = "Assets/UI/Fonts/CinzelSemiBoldSDF.asset";
         public const float TitleViewingDistance = 3.45f;
 
@@ -329,10 +334,9 @@ namespace StructureBuild.Editor
                     img.sprite = bgSprite;
                     img.type = Image.Type.Simple;
                     img.preserveAspect = false;
-                    img.color = Color.white;
-                    btn.normalColor = Color.white;
-                    // Accent colour for hover tint matches the focusColor (amber for START, ice for EXIT).
-                    btn.highlightedColor = new Color(btn.focusColor.r, btn.focusColor.g, btn.focusColor.b, 1f);
+                    img.color = ButtonFrameNormal;
+                    btn.normalColor = ButtonFrameNormal;
+                    btn.highlightedColor = ButtonFrameHighlight;
                     EditorUtility.SetDirty(btn);
                     Debug.Log($"[TitleSceneInstaller] RefreshButtonArtAndLabels: sprite set on {btn.name}");
                 }
@@ -356,12 +360,13 @@ namespace StructureBuild.Editor
                         var tmp = labelObj.GetComponent<TextMeshProUGUI>();
                         tmp.font = cinzelFont ?? TMP_Settings.defaultFontAsset;
                         tmp.text = btn.name;  // "START" or "EXIT"
-                        tmp.fontSize = isStart ? 52f : 46f;
+                        tmp.fontSize = isStart ? 30f : 27f;
+                        tmp.characterSpacing = 10f;
                         tmp.color = new Color(0.87f, 0.94f, 1f, 1f); // ice white normal state
                         tmp.fontStyle = FontStyles.Normal;
                         tmp.alignment = TextAlignmentOptions.Center;
                         tmp.textWrappingMode = TextWrappingModes.NoWrap;
-                        tmp.overflowMode = TextOverflowModes.Ellipsis;
+                        tmp.overflowMode = TextOverflowModes.Overflow;
                         tmp.raycastTarget = false;
                         btn.labelText = tmp;
                         EditorUtility.SetDirty(btn);
@@ -444,7 +449,8 @@ namespace StructureBuild.Editor
             // Sized 24 px larger on each side so the amber glow spills outside the button frame.
             // Must be created before the button so it sits at a lower sibling index.
             var glow = Panel(name + "Glow", parent, Color.clear);
-            SetRect(glow.rectTransform, Vector2.one * 0.5f, Vector2.one * 0.5f, position, size + new Vector2(24f, 24f));
+            SetRect(glow.rectTransform, Vector2.one * 0.5f, Vector2.one * 0.5f, position, size + new Vector2(70f, 60f));
+            glow.sprite = LoadPanelSprite(ButtonGlowSpritePath);
             glow.raycastTarget = false;
 
             // ── Button background image (Tripo banana2 designed frame) ──────
@@ -467,8 +473,8 @@ namespace StructureBuild.Editor
             behavior.graphic = button;
             // normalColor = white so the designed background sprite shows at full brightness.
             // highlightedColor = accent so the sprite tints warm amber on hover.
-            behavior.normalColor = bgSprite != null ? Color.white : new Color(0.08f, 0.10f, 0.20f, 0.88f);
-            behavior.highlightedColor = new Color(accent.r, accent.g, accent.b, 1f);
+            behavior.normalColor = bgSprite != null ? ButtonFrameNormal : new Color(0.08f, 0.10f, 0.20f, 0.88f);
+            behavior.highlightedColor = bgSprite != null ? ButtonFrameHighlight : new Color(accent.r, accent.g, accent.b, 1f);
             behavior.focusColor = accent;
             behavior.glowImage = glow;
 
@@ -492,13 +498,15 @@ namespace StructureBuild.Editor
             var labelTmp = labelObj.GetComponent<TextMeshProUGUI>();
             var cinzelFont = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(CinzelSemiBoldSdfPath);
             labelTmp.font = cinzelFont ?? TMP_Settings.defaultFontAsset;
-            labelTmp.text = name; // "START" or "EXIT" — Cinzel renders in true small-caps
-            labelTmp.fontSize = name == "START" ? 52f : 46f;
+            labelTmp.text = name; // "START" or "EXIT"：全大写，字母等高
+            // 按钮高约 52 单位：字号必须让行高落在按钮内，否则 Ellipsis 会把整行截掉
+            labelTmp.fontSize = name == "START" ? 30f : 27f;
+            labelTmp.characterSpacing = 10f;
             labelTmp.color = new Color(0.87f, 0.94f, 1f, 1f); // ice-white for normal state
             labelTmp.fontStyle = FontStyles.Normal;
             labelTmp.alignment = TextAlignmentOptions.Center;
             labelTmp.textWrappingMode = TextWrappingModes.NoWrap;
-            labelTmp.overflowMode = TextOverflowModes.Ellipsis;
+            labelTmp.overflowMode = TextOverflowModes.Overflow;
             labelTmp.raycastTarget = false;
             behavior.labelText = labelTmp;
         }
@@ -529,7 +537,7 @@ namespace StructureBuild.Editor
             return text;
         }
 
-        private static Sprite LoadPanelSprite(string assetPath)
+        internal static Sprite LoadPanelSprite(string assetPath)
         {
             AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
             var importer = AssetImporter.GetAtPath(assetPath) as TextureImporter;
@@ -539,7 +547,8 @@ namespace StructureBuild.Editor
                 importer.spriteImportMode = SpriteImportMode.Single;
                 importer.wrapMode = TextureWrapMode.Clamp;
                 importer.filterMode = FilterMode.Bilinear;
-                importer.mipmapEnabled = false;
+                // 按钮框与光晕在 VR 中缩小显示，开 mipmap 防闪烁；封面大图保持原设置
+                importer.mipmapEnabled = assetPath.Contains("/ButtonBG/LumenButton_");
                 importer.maxTextureSize = 4096;
                 importer.textureCompression = TextureImporterCompression.Uncompressed;
                 // Keep the full artwork for desktop; Android must not load the
