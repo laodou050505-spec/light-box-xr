@@ -2,6 +2,7 @@ using System.IO;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.TextCore.LowLevel;
 
 namespace StructureBuild.Editor
 {
@@ -60,11 +61,11 @@ namespace StructureBuild.Editor
             }
 
             // TMP_FontAsset.CreateFontAsset() is the public API for generating SDF font assets.
+            // 参数：字体、采样字号、字形边距、渲染模式、图集宽、图集高
             var fontAsset = TMP_FontAsset.CreateFontAsset(
                 font,
                 samplingPointSize,
-                atlasSize,
-                atlasSize,
+                Mathf.Max(4, samplingPointSize / 6),
                 GlyphRenderMode.SDFAA,
                 atlasSize,
                 atlasSize
