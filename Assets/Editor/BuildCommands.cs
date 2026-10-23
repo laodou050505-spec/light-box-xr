@@ -129,6 +129,11 @@ namespace StructureBuild.Editor
             };
             var report = BuildPipeline.BuildPlayer(options);
             Debug.Log($"[LumenBox-EN] Build result: {report.summary.result}, size: {report.summary.totalSize / 1024 / 1024} MB, output: {outputPath}");
+            // StrictMode 下任何报错都会让构建失败，把报告里的错误逐条打印出来便于定位
+            foreach (var step in report.steps)
+                foreach (var message in step.messages)
+                    if (message.type == LogType.Error || message.type == LogType.Exception || message.type == LogType.Assert)
+                        Debug.Log($"[LumenBox-EN] BUILD_ERROR step={step.name}: {message.content}");
             return report;
         }
 
